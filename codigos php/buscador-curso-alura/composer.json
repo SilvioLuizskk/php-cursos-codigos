@@ -1,0 +1,43 @@
+{
+    "name": "silvioskk/buscador-cursos",
+    "description": "Projeto que busca os cursos no site da Alura",
+    "type": "library",
+    "authors": [
+        {
+            "name": "silvioskk",
+            "email": "luizsilvio@gmail.com"
+        }
+    ],
+    "require": {
+        "guzzlehttp/guzzle": "^7.10",
+        "symfony/dom-crawler": "^4.2",
+        "symfony/css-selector": "^7.3",
+        "phan/phan": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "BuscadorDeCurso\\": "src/"
+        }
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^12.4"
+    },
+
+    "scripts": {
+        "test": "phpunit tests\\BuscadorCursosAlura",
+        "cs": "phpcs --standard=PSR12",
+         "phan": "phan --allow-polyfill-parser",
+        "check": [
+            
+            "@cs",
+            "@test"
+        ]
+    },
+    "scripts-descriptions": {
+        "test": "Executa os testes unitários com PHPUnit",
+        "cs": "Verifica a conformidade do código com o padrão PSR-12 usando PHP_CodeSniffer",
+        "phan": "Executa a análise estática de código com Phan",
+        "check": "Executa todas as verificações de qualidade de código (CS e testes)"
+
+    }
+}
