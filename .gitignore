@@ -7,9 +7,9 @@
 /logs/
 
 # Dependências (Composer, npm, etc.)
-/vendor/
-/node_modules/
-/bower_components/
+vendor/
+node_modules/
+bower_components/
 
 # Arquivos de configuração sensíveis
 .env
