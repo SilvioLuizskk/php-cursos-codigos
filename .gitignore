@@ -1,0 +1,45 @@
+# Arquivos de log
+*.log
+
+# Arquivos de cache
+/cache/
+/tmp/
+/logs/
+
+# Dependências (Composer, npm, etc.)
+/vendor/
+/node_modules/
+/bower_components/
+
+# Arquivos de configuração sensíveis
+.env
+.env.local
+.env.production
+
+# Arquivos temporários
+*.tmp
+*.swp
+*.swo
+*~
+
+# IDEs e editores
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
+
+# Laravel específico (se aplicável)
+storage/app/*
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+storage/logs/*
+bootstrap/cache/*
+
+# Outros
+.phpunit.result.cache
+composer.lock (opcional, se quiser versionar)
