@@ -1,0 +1,45 @@
+{
+  "name": "alura/formacoes-cursos-bdd",
+  "description": "Sistema de gerenciamento de formações e cursos com BDD usando Behat",
+  "type": "project",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Desenvolvedor",
+      "email": "dev@example.com"
+    }
+  ],
+  "minimum-stability": "stable",
+  "prefer-stable": true,
+  "autoload": {
+    "psr-4": {
+        "Alura\\Armazenamento\\": "src/"
+    }
+  },
+  "require": {
+    "psr/http-message": "^1.0",
+    "psr/http-server-handler": "^1.0",
+    "nyholm/psr7": "^1.1",
+    "nyholm/psr7-server": "^1.0",
+    "doctrine/orm": "^2.14",
+    "php-di/php-di": "^6.0"
+  },
+  "require-dev": {
+    "behat/behat": "^3.13",
+    "behat/mink": "^1.10",
+    "friends-of-behat/mink-extension": "^2.7",
+    "behat/mink-browserkit-driver": "^1.4",
+    "symfony/http-client": "^6.0",
+    "phpunit/phpunit": "^9.0"
+  },
+  "scripts": {
+    "test": "behat",
+    "test:unit": "behat --tags=unidade",
+    "test:integration": "behat --tags=integracao",
+    "test:e2e": "behat --tags=e2e",
+    "serve": "php -S localhost:8080 -t public/",
+    "doctrine:schema:create": "vendor/bin/doctrine orm:schema-tool:create",
+    "doctrine:schema:update": "vendor/bin/doctrine orm:schema-tool:update --force",
+    "doctrine:schema:validate": "vendor/bin/doctrine orm:validate-schema"
+  }
+}
