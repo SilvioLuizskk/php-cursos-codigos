@@ -1,0 +1,38 @@
+default:
+  suites:
+    default:
+      paths:
+        - '%paths.base%/features'
+      contexts:
+        - FeatureContext
+
+  autoload:
+    '': '%paths.base%/features/bootstrap'
+  # Perfil padrão: usa um FeatureContext que faz requisições HTTP (por exemplo, via Guzzle)
+  parameters:
+    base_url: 'http://127.0.0.1:8000'
+
+# Exemplo de perfil alternativo para usar Mink + Selenium (teste de browser)
+# Para usar este perfil, adicione as dependências no composer (require-dev):
+#   behat/mink
+#   behat/mink-selenium2-driver
+#   php-webdriver/webdriver
+# e execute: vendor/bin/behat -p selenium
+selenium:
+  extensions:
+    Behat\MinkExtension:\
+      base_url: 'http://web:8000'\
+      selenium2: ~\
+      goutte: ~
+  suites:
+    default:
+      contexts:
+        - FeatureContext
+  # Parâmetros Selenium
+  parameters:
+    base_url: 'http://web:8000'
+    selenium_host: 'http://selenium:4444/wd/hub'
+
+# Observação: o perfil `selenium` pressupõe que o Behat esteja executando dentro de
+# um container que consegue acessar os serviços `web` e `selenium` por nome
+# (por exemplo via `docker-compose.bdd.yml` criado previamente).
