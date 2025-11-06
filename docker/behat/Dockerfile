@@ -20,7 +20,7 @@ WORKDIR /app
 
 CMD ["bash"]
 
-# Install chromedriver for Mink/Selenium tests (optional, used if you need local driver)
-RUN set -eux; \
-    CHROME_VERSION="114.0.5735.90" || true; \
-    # Note: for CI we use selenium/standalone-chrome; chromedriver here is optional
+# Notes:
+# - Project files are mounted into /app by docker-compose so we don't copy them here.
+# - The container provides composer and PHP tooling so the runner can execute
+#   `composer install` and `vendor/bin/behat` as configured in docker-compose.bdd.yml.

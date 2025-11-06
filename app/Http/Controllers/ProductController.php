@@ -77,25 +77,9 @@ class ProductController extends Controller
         $validated['user_id'] = Auth::id();
         $validated['active'] = $request->has('active');
 
-        $product = Product::create($validated);
+        $images = $request->hasFile('images') ? $request->file('images') : [];
 
-        // Upload de imagens
-        if ($request->hasFile('images')) {
-            foreach ($request->file('images') as $index => $image) {
-                $filename = time() . '_' . $index . '_' . $image->getClientOriginalName();
-                $path = $image->storeAs('products', $filename, 'public');
-
-                $product->images()->create([
-                    'filename' => $filename,
-                    'original_name' => $image->getClientOriginalName(),
-                    'path' => $path,
-                    'size' => $image->getSize(),
-                    'mime_type' => $image->getMimeType(),
-                    'is_primary' => $index === 0, // Primeira imagem é primária
-                    'sort_order' => $index,
-                ]);
-            }
-        }
+        $product = $this->repo->add($validated, $images);
 
         // Disparar evento
         event(new ProductCreated($product));
@@ -142,31 +126,15 @@ class ProductController extends Controller
      */
     public function update(\App\Http\Requests\UpdateProductRequest $request, $id)
     {
-        $product = $this->repo->findForUserOrFail($id, Auth::id());
+        // garante que o produto pertence ao usuário (lança se não)
+        $this->repo->findForUserOrFail($id, Auth::id());
 
         $validated = $request->validated();
         $validated['active'] = $request->has('active');
-        $product->update($validated);
 
-        // Upload de novas imagens
-        if ($request->hasFile('images')) {
-            $currentImagesCount = $product->images()->count();
+        $images = $request->hasFile('images') ? $request->file('images') : [];
 
-            foreach ($request->file('images') as $index => $image) {
-                $filename = time() . '_' . ($currentImagesCount + $index) . '_' . $image->getClientOriginalName();
-                $path = $image->storeAs('products', $filename, 'public');
-
-                $product->images()->create([
-                    'filename' => $filename,
-                    'original_name' => $image->getClientOriginalName(),
-                    'path' => $path,
-                    'size' => $image->getSize(),
-                    'mime_type' => $image->getMimeType(),
-                    'is_primary' => $currentImagesCount === 0 && $index === 0,
-                    'sort_order' => $currentImagesCount + $index,
-                ]);
-            }
-        }
+        $product = $this->repo->updateById($id, $validated, $images);
 
         return redirect()->route('products.show', $product)
             ->with('success', 'Produto atualizado com sucesso!');

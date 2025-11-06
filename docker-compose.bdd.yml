@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   php:
     build:
@@ -68,8 +66,9 @@ services:
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:4444/status || exit 1"]
       interval: 10s
-      timeout: 5s
-      retries: 10
+      timeout: 10s
+      retries: 20
+      start_period: 10s
 
   db:
     image: mysql:8.0
@@ -83,9 +82,9 @@ services:
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-uroot", "-psecret"]
       interval: 10s
-      timeout: 5s
-      retries: 10
-      start_period: 10s
+      timeout: 10s
+      retries: 20
+      start_period: 30s
 
 volumes:
   db_data:
