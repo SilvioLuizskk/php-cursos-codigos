@@ -1,0 +1,61 @@
+{
+    "dashboard": {
+        "id": null,
+        "uid": "ab-tests",
+        "title": "A/B Tests Overview",
+        "tags": ["ab", "performance"],
+        "timezone": "browser",
+        "schemaVersion": 16,
+        "version": 0,
+        "panels": [
+            {
+                "type": "stat",
+                "title": "Exposures A",
+                "gridPos": { "x": 0, "y": 0, "w": 6, "h": 4 },
+                "targets": [
+                    {
+                        "expr": "app_ab_exposures_total{variant=\"A\"}",
+                        "legendFormat": "A"
+                    }
+                ]
+            },
+            {
+                "type": "stat",
+                "title": "Exposures B",
+                "gridPos": { "x": 6, "y": 0, "w": 6, "h": 4 },
+                "targets": [
+                    {
+                        "expr": "app_ab_exposures_total{variant=\"B\"}",
+                        "legendFormat": "B"
+                    }
+                ]
+            },
+            {
+                "type": "graph",
+                "title": "Conversion Rate (A vs B)",
+                "gridPos": { "x": 0, "y": 4, "w": 12, "h": 6 },
+                "targets": [
+                    {
+                        "expr": "(app_ab_conversions_total{variant=\"A\"} / app_ab_exposures_total{variant=\"A\"}) * 100",
+                        "legendFormat": "A %"
+                    },
+                    {
+                        "expr": "(app_ab_conversions_total{variant=\"B\"} / app_ab_exposures_total{variant=\"B\"}) * 100",
+                        "legendFormat": "B %"
+                    }
+                ]
+            },
+            {
+                "type": "graph",
+                "title": "Request Duration p95",
+                "gridPos": { "x": 0, "y": 10, "w": 12, "h": 6 },
+                "targets": [
+                    {
+                        "expr": "app_request_duration_seconds_p95",
+                        "legendFormat": "p95"
+                    }
+                ]
+            }
+        ]
+    }
+}

@@ -1,0 +1,66 @@
+version: "3.8"
+
+services:
+    app:
+        image: php:8.4-cli
+        container_name: ecom_app
+        working_dir: /var/www/html
+        volumes:
+            - ./:/var/www/html:cached
+            - ./backend-laravel/vendor:/var/www/html/vendor:cached
+            - .env:/var/www/html/.env:cached
+        command: bash -lc "php artisan config:cache && php artisan migrate --force || true; php artisan serve --host=0.0.0.0 --port=9000"
+        ports:
+            - "9000:9000"
+        depends_on:
+            - redis
+        environment:
+            - APP_ENV=local
+            - APP_DEBUG=true
+            - DB_CONNECTION=mysql
+            - REDIS_HOST=redis
+
+    redis:
+        image: redis:7
+        container_name: ecom_redis
+        ports:
+            - "6379:6379"
+
+    prometheus:
+        image: prom/prometheus:latest
+        container_name: ecom_prometheus
+        volumes:
+            - ./docs/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+            - ./docs/prometheus/rules:/etc/prometheus/rules:ro
+        ports:
+            - "9090:9090"
+        command:
+            - "--config.file=/etc/prometheus/prometheus.yml"
+        depends_on:
+            - alertmanager
+
+    grafana:
+        image: grafana/grafana:9.5.2
+        container_name: ecom_grafana
+        environment:
+            - GF_INSTALL_PLUGINS=
+            - GF_SECURITY_ADMIN_PASSWORD=admin
+        volumes:
+            - ./docs/grafana:/var/lib/grafana/dashboards:ro
+            - ./docs/grafana/provisioning:/etc/grafana/provisioning:ro
+        ports:
+            - "3000:3000"
+        depends_on:
+            - prometheus
+
+    alertmanager:
+        image: prom/alertmanager:latest
+        container_name: ecom_alertmanager
+        volumes:
+            - ./docs/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+        ports:
+            - "9093:9093"
+
+networks:
+    default:
+        driver: bridge

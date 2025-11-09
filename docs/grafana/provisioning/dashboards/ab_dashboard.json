@@ -1,0 +1,42 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "panels": [
+    {
+      "type": "graph",
+      "title": "A/B Exposures (per test/variant)",
+      "targets": [
+        {
+          "expr": "sum(app_ab_exposures_total) by (test, variant)",
+          "legendFormat": "{{test}} {{variant}}"
+        }
+      ],
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 0 }
+    },
+    {
+      "type": "graph",
+      "title": "A/B Conversions (per test/variant)",
+      "targets": [
+        {
+          "expr": "sum(app_ab_conversions_total) by (test, variant)",
+          "legendFormat": "{{test}} {{variant}}"
+        }
+      ],
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 8 }
+    },
+    {
+      "type": "stat",
+      "title": "p50 latency (s)",
+      "targets": [ { "expr": "app_request_duration_seconds_p50" } ],
+      "gridPos": { "h": 4, "w": 12, "x": 0, "y": 16 }
+    },
+    {
+      "type": "stat",
+      "title": "p95 latency (s)",
+      "targets": [ { "expr": "app_request_duration_seconds_p95" } ],
+      "gridPos": { "h": 4, "w": 12, "x": 12, "y": 16 }
+    }
+  ],
+  "title": "A/B Overview"
+}

@@ -1,0 +1,20 @@
+groups:
+  - name: app.rules
+    rules:
+      - alert: HighErrorRate
+        expr: (increase(app_requests_errors[1m]) / clamp_min(increase(app_requests_total[1m]), 1)) > 0.10
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High 5xx rate"
+          description: "Mais de 10% de respostas 5xx em 1 minuto"
+
+      - alert: HighLatencyP95
+        expr: app_request_duration_seconds_p95 > 1.5
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High p95 latency"
+          description: "Latência p95 acima de 1.5s"
