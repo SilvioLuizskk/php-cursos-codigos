@@ -9,8 +9,8 @@ use Illuminate\Database\Eloquent\Collection;
 class CartService
 {
     public function __construct(
-        private readonly CartRepositoryInterface $cartRepository,
-        private readonly ProductRepositoryInterface $productRepository
+        private CartRepositoryInterface $cartRepository,
+        private ProductRepositoryInterface $productRepository
     ) {}
 
     public function getCartItems(int $userId): Collection

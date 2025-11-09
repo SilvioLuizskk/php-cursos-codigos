@@ -1,0 +1,18 @@
+default:
+  suites:
+    default:
+      paths:
+        - '%paths.base%/features'
+      contexts:
+        - FeatureContext
+
+extensions:
+  Behat\MinkExtension:
+    base_url: 'http://127.0.0.1:8000'
+    goutte: ~
+    selenium2: ~
+    sessions:
+      default:
+        selenium2: ~
+
+# Note: set APP_URL and SELENIUM_HOST environment variables when running behat if needed.

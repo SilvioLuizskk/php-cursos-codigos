@@ -1,0 +1,11 @@
+default:
+  suites:
+    default:
+      paths:
+        - '%paths.base%/features'
+      contexts:
+        - FeatureContext
+
+  autoload:
+    '': '%paths.base%/features/bootstrap'
+  # Perfil padrão: usa um FeatureContext que faz requisições HTTP (por exemplo, via Guzzle)

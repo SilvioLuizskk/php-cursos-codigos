@@ -95,7 +95,13 @@ class ProductControllerTest extends TestCase
     public function test_admin_can_create_product()
     {
         $admin = User::factory()->create(['role' => 'admin']);
-        $this->actingAs($admin, 'sanctum');
+        if ($admin instanceof \Illuminate\Database\Eloquent\Collection) {
+            $admin = $admin->first();
+        }
+        if (!$admin) {
+            $this->fail('Usuário admin não encontrado.');
+        }
+    $this->actingAs($admin instanceof \Illuminate\Contracts\Auth\Authenticatable ? $admin : new class extends \App\Models\User implements \Illuminate\Contracts\Auth\Authenticatable {}, 'sanctum');
 
         $productData = [
             'name' => 'Produto Teste',
@@ -119,7 +125,13 @@ class ProductControllerTest extends TestCase
     public function test_non_admin_cannot_create_product()
     {
         $user = User::factory()->create(['role' => 'customer']);
-        $this->actingAs($user, 'sanctum');
+        if ($user instanceof \Illuminate\Database\Eloquent\Collection) {
+            $user = $user->first();
+        }
+        if (!$user) {
+            $this->fail('Usuário customer não encontrado.');
+        }
+    $this->actingAs($user instanceof \Illuminate\Contracts\Auth\Authenticatable ? $user : new class extends \App\Models\User implements \Illuminate\Contracts\Auth\Authenticatable {}, 'sanctum');
 
         $productData = [
             'name' => 'Produto Teste',

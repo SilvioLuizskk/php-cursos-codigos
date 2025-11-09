@@ -1,0 +1,86 @@
+name: CI - PHPUnit & Behat
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: testing
+        ports:
+          - 3306:3306
+        options: >
+          --health-cmd='mysqladmin ping --silent' --health-interval=10s --health-timeout=5s --health-retries=3
+      selenium:
+        image: selenium/standalone-chrome:115.0
+        ports:
+          - 4444:4444
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          extensions: mbstring, bcmath, pdo_mysql
+          ini-values: post_max_size=256M, upload_max_filesize=256M
+
+      - name: Get composer cache
+        uses: actions/cache@v3
+        with:
+          path: ~/.composer/cache
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
+
+      - name: Install Composer dependencies
+        run: composer install --no-progress --no-suggest --prefer-dist
+
+      - name: Prepare environment
+        run: |
+          cp .env.example .env
+          php -r "file_exists('.env') || copy('.env.example', '.env');"
+          php artisan key:generate
+        env:
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: testing
+          DB_USERNAME: root
+          DB_PASSWORD: root
+
+      - name: Wait for MySQL
+        run: |
+          for i in `seq 1 30`; do
+            if nc -z 127.0.0.1 3306; then break; fi
+            echo 'Waiting for MySQL...'; sleep 2
+          done
+
+      - name: Run migrations
+        run: php artisan migrate --force
+
+      - name: Run PHPUnit
+        run: vendor/bin/phpunit --testdox
+
+      - name: Start PHP server
+        run: nohup php -S 127.0.0.1:8000 -t public > /tmp/php-server.log 2>&1 &
+
+      - name: Wait for Selenium
+        run: |
+          for i in `seq 1 30`; do
+            if nc -z 127.0.0.1 4444; then break; fi
+            echo 'Waiting for Selenium...'; sleep 2
+          done
+
+      - name: Run Behat (Selenium)
+        env:
+          APP_URL: http://127.0.0.1:8000
+          SELENIUM_HOST: http://127.0.0.1:4444/wd/hub
+        run: vendor/bin/behat -c behat.selenium.yml.dist --strict

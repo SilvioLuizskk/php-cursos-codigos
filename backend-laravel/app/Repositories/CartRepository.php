@@ -15,6 +15,13 @@ class CartRepository implements CartRepositoryInterface
                   ->get();
     }
 
+    public function findByUserAndId($userId, $cartItemId): ?Cart
+    {
+        return Cart::where('user_id', $userId)
+                  ->where('id', $cartItemId)
+                  ->first();
+    }
+
     public function findByUserAndProduct($userId, $productId): ?Cart
     {
         return Cart::where('user_id', $userId)
@@ -57,5 +64,9 @@ class CartRepository implements CartRepositoryInterface
                   ->sum(function ($item) {
                       return $item->product->price * $item->quantity;
                   });
+    }
+    public function getItemsCountByUserId($userId): int
+    {
+        return Cart::where('user_id', $userId)->count();
     }
 }

@@ -35,8 +35,8 @@ class OrderController extends Controller
             ]);
 
             $orders = $this->orderService->getUserOrders(
-                userId: $request->user()->id,
-                filters: $filters
+                $request->user()->id,
+                $filters
             );
 
             return response()->json([
@@ -85,9 +85,21 @@ class OrderController extends Controller
                 'data' => $request->validated(),
             ]);
 
+            // Retornar códigos de status específicos baseados no tipo de erro
+            $statusCode = 400;
+            $message = $e->getMessage();
+
+            if (str_contains($message, 'Carrinho vazio')) {
+                $statusCode = 422;
+            } elseif (str_contains($message, 'sem estoque')) {
+                $statusCode = 422;
+            } elseif (str_contains($message, 'Cupom')) {
+                $statusCode = 422;
+            }
+
             return response()->json([
-                'message' => $e->getMessage(),
-            ], 400);
+                'message' => $message,
+            ], $statusCode);
         }
     }
 
@@ -136,7 +148,7 @@ class OrderController extends Controller
                 ], 404);
             }
 
-            $cancelledOrder = $this->orderService->cancelOrder($order->id);
+            $cancelledOrder = $this->orderService->cancelOrder($order->id, $request->user()->id);
 
             return response()->json([
                 'message' => 'Pedido cancelado com sucesso',

@@ -1,24 +1,26 @@
 <template>
-  <div id="app">
-    <router-view />
-  </div>
+    <div id="app">
+        <router-view />
+        <Notification />
+    </div>
 </template>
 
 <script setup>
 import { onMounted } from "vue";
 import { useAuth } from "@/composables/useAuth";
+import Notification from "@/components/common/Notification.vue";
 
 const { fetchMe, isAuthenticated } = useAuth();
 
 onMounted(async () => {
-  // Se tem token, tentar carregar dados do usuário
-  if (isAuthenticated.value) {
-    try {
-      await fetchMe();
-    } catch (error) {
-      console.error("Erro ao carregar usuário:", error);
+    // Se tem token, tentar carregar dados do usuário
+    if (isAuthenticated.value) {
+        try {
+            await fetchMe();
+        } catch (error) {
+            console.error("Erro ao carregar usuário:", error);
+        }
     }
-  }
 });
 </script>
 
@@ -29,6 +31,6 @@ onMounted(async () => {
 @tailwind utilities;
 
 body {
-  font-family: "Inter", sans-serif;
+    font-family: "Inter", sans-serif;
 }
 </style>

@@ -53,7 +53,7 @@ class OrderService
 
         // Adicionar custos de envio e descontos
         $shippingCost = $this->calculateShipping($data['shipping_address']);
-        $discountAmount = $this->calculateDiscount($data['coupon'] ?? null, $subtotal);
+        $discountAmount = $this->calculateDiscount($data['coupon_code'] ?? null, $subtotal, $userId);
         $totalAmount = $subtotal + $shippingCost - $discountAmount;
 
         // Criar pedido
@@ -109,6 +109,29 @@ class OrderService
         return $this->orderRepository->cancel($orderId);
     }
 
+    public function getTrackingInfo($orderId)
+    {
+        $order = $this->orderRepository->find($orderId);
+        return [
+            'tracking_code' => $order->tracking_code,
+            'tracking_url' => $order->tracking_url,
+            'status' => $order->status,
+            'shipped_at' => $order->shipped_at,
+            'delivered_at' => $order->delivered_at,
+        ];
+    }
+
+    public function getUserOrderStats($userId)
+    {
+        $orders = $this->orderRepository->getUserOrders($userId);
+        return [
+            'total_orders' => $orders->count(),
+            'total_spent' => $orders->sum('total_amount'),
+            'pending_orders' => $orders->where('status', 'pending')->count(),
+            'completed_orders' => $orders->where('status', 'delivered')->count(),
+        ];
+    }
+
     private function generateOrderNumber(): string
     {
         $prefix = date('Ymd');
@@ -122,13 +145,27 @@ class OrderService
         return 15.00;
     }
 
-    private function calculateDiscount(?string $couponCode, float $subtotal): float
+    private function calculateDiscount(?string $couponCode, float $subtotal, int $userId): float
     {
         if (!$couponCode) {
             return 0;
         }
 
-        // Implementar lógica de cupons
-        return 0;
+        $coupon = \App\Models\Coupon::where('code', $couponCode)->first();
+        if (!$coupon) {
+            throw new \Exception('Cupom inválido');
+        }
+
+        $user = \App\Models\User::find($userId);
+        if (!$coupon->canBeUsedBy($user, $subtotal)) {
+            throw new \Exception('Cupom não pode ser utilizado');
+        }
+
+        $discount = $coupon->calculateDiscount($subtotal);
+
+        // Incrementar uso do cupom
+        $coupon->incrementUsage();
+
+        return $discount;
     }
 }

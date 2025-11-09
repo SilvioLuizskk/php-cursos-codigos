@@ -28,7 +28,7 @@ class AuthController extends Controller
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
                 'role' => 'user',
-                'is_active' => true,
+                'status' => 'active',
             ]);
 
             // Gerar token JWT
@@ -42,7 +42,7 @@ class AuthController extends Controller
             ]);
 
             // Disparar evento de registro (para emails de boas-vindas)
-            event(new \App\Events\UserRegistered($user));
+            // event(new \App\Events\UserRegistered($user));
 
             return response()->json([
                 'message' => 'Usuário registrado com sucesso',
@@ -81,7 +81,7 @@ class AuthController extends Controller
             }
 
             // Verificar se usuário está ativo
-            if (!$user->is_active) {
+            if ($user->status !== 'active') {
                 return response()->json([
                     'message' => 'Conta desativada. Entre em contato com o suporte.',
                 ], 403);

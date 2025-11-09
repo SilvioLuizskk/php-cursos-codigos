@@ -9,6 +9,69 @@ use Illuminate\Pagination\LengthAwarePaginator;
 
 class ProductRepository implements ProductRepositoryInterface
 {
+    public function add(array $data, array $images = []): Product
+    {
+        $product = Product::create($data);
+        // Handle images if needed
+        // Example: $product->images()->createMany($images);
+        return $product;
+    }
+
+    public function findByFilters(array $filters = [], int $perPage = 12, array $with = [])
+    {
+        $query = Product::query();
+
+        if (!empty($with)) {
+            $query->with($with);
+        }
+
+        // Example filters
+        if (!empty($filters['category_id'])) {
+            $query->where('category_id', $filters['category_id']);
+        }
+        if (!empty($filters['min_price'])) {
+            $query->where('price', '>=', $filters['min_price']);
+        }
+        if (!empty($filters['max_price'])) {
+            $query->where('price', '<=', $filters['max_price']);
+        }
+        if (!empty($filters['search'])) {
+            $query->where(function ($q) use ($filters) {
+                $q->where('name', 'like', "%{$filters['search']}%")
+                  ->orWhere('description', 'like', "%{$filters['search']}%");
+            });
+        }
+
+        return $query->paginate($perPage);
+    }
+
+    public function findForUserOrFail($id, $userId, array $with = []): Product
+    {
+        $query = Product::where('id', $id)->where('user_id', $userId);
+        if (!empty($with)) {
+            $query->with($with);
+        }
+        return $query->firstOrFail();
+    }
+
+    public function findOrFail($id, array $with = []): Product
+    {
+        $query = Product::where('id', $id);
+        if (!empty($with)) {
+            $query->with($with);
+        }
+        return $query->firstOrFail();
+    }
+
+    public function updateById($id, array $data, array $images = []): Product
+    {
+        $product = Product::findOrFail($id);
+        $product->update($data);
+        // Handle images if needed
+        // Example: $product->images()->sync($images);
+        return $product->fresh();
+    }
+
     public function all()
     {
         return Product::active()->orderBy('created_at', 'desc')->get();
