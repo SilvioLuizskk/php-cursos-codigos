@@ -10,6 +10,7 @@ use App\Services\OrderService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use App\Services\WhatsAppNotifier;
 
 class OrderController extends Controller
 {
@@ -84,6 +85,18 @@ class OrderController extends Controller
                 'user_id' => $request->user()->id,
                 'data' => $request->validated(),
             ]);
+
+            // Notify admin via WhatsApp (best-effort)
+            try {
+                $adminPhone = config('app.admin_whatsapp') ?: env('ADMIN_WHATSAPP');
+                if ($adminPhone) {
+                    $notifier = app(WhatsAppNotifier::class);
+                    $text = "[ALERTA] Falha ao criar pedido para user_id={$request->user()->id}: {$e->getMessage()}";
+                    $notifier->send($adminPhone, $text);
+                }
+            } catch (\Throwable $t) {
+                Log::warning('Failed to send WhatsApp alert: ' . $t->getMessage());
+            }
 
             // Retornar códigos de status específicos baseados no tipo de erro
             $statusCode = 400;

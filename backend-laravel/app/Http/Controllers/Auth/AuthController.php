@@ -20,6 +20,8 @@ class AuthController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'role' => 'user', // Role padrão permitido
+            'status' => 'active', // Status padrão
         ]);
 
         $token = $user->createToken('auth_token')->plainTextToken;
@@ -39,7 +41,7 @@ class AuthController extends Controller
             ]);
         }
 
-        $user = User::where('email', $request->email)->firstOrFail();
+        $user = Auth::user(); // Usar o usuário autenticado
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
@@ -51,7 +53,10 @@ class AuthController extends Controller
 
     public function logout(Request $request): JsonResponse
     {
-        $request->user()->tokens()->delete();
+        $user = $request->user();
+        if ($user) {
+            $user->tokens()->delete();
+        }
 
         return response()->json([
             'message' => 'Logout realizado com sucesso!',
@@ -60,6 +65,68 @@ class AuthController extends Controller
 
     public function me(): JsonResponse
     {
-        return response()->json(auth()->user());
+        $user = Auth::user();
+
+        if (!$user) {
+            return response()->json([
+                'message' => 'Usuário não autenticado'
+            ], 401);
+        }
+
+        return response()->json($user);
+    }
+
+    public function user(): JsonResponse
+    {
+        return $this->me();
+    }
+
+    public function forgotPassword(Request $request): JsonResponse
+    {
+        // TODO: Implementar lógica de recuperação de senha
+        return response()->json([
+            'message' => 'Funcionalidade de recuperação de senha em desenvolvimento'
+        ]);
+    }
+
+    public function resetPassword(Request $request): JsonResponse
+    {
+        // TODO: Implementar lógica de reset de senha
+        return response()->json([
+            'message' => 'Funcionalidade de reset de senha em desenvolvimento'
+        ]);
+    }
+
+    public function logoutAll(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        if ($user) {
+            $user->tokens()->delete();
+        }
+
+        return response()->json([
+            'message' => 'Logout de todos os dispositivos realizado com sucesso!',
+        ]);
+    }
+
+    public function refresh(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        if (!$user) {
+            return response()->json([
+                'message' => 'Usuário não autenticado'
+            ], 401);
+        }
+
+        // Revogar token atual
+        $request->user()->currentAccessToken()->delete();
+
+        // Criar novo token
+        $token = $user->createToken('auth_token')->plainTextToken;
+
+        return response()->json([
+            'message' => 'Token renovado com sucesso!',
+            'token' => $token,
+        ]);
     }
 }

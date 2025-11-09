@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+
 # 🎯 Karibe Presente Personalizado
 
 > Sistema completo de e-commerce para personalização de produtos
@@ -9,46 +10,49 @@
 
 ### ✨ Características Principais
 
-- 🎨 **Interface Moderna**: Design responsivo com Vue.js 3 e Tailwind CSS
-- ⚡ **Performance Otimizada**: Frontend SPA com carregamento rápido
-- 🔐 **Segurança Robusta**: Autenticação JWT com Laravel Sanctum
-- 📱 **Mobile First**: Totalmente responsivo para todos os dispositivos
-- 🛒 **E-commerce Completo**: Carrinho, checkout, pagamentos e pedidos
-- 👑 **Painel Admin**: Gestão completa de produtos, usuários e pedidos
+-   🎨 **Interface Moderna**: Design responsivo com Vue.js 3 e Tailwind CSS
+-   ⚡ **Performance Otimizada**: Frontend SPA com carregamento rápido
+-   🔐 **Segurança Robusta**: Autenticação JWT com Laravel Sanctum
+-   📱 **Mobile First**: Totalmente responsivo para todos os dispositivos
+-   🛒 **E-commerce Completo**: Carrinho, checkout, pagamentos e pedidos
+-   👑 **Painel Admin**: Gestão completa de produtos, usuários e pedidos
 
 ## 🛠️ Stack Tecnológica
 
 ### Frontend
-- **Vue.js 3** - Framework JavaScript progressivo
-- **Vite** - Build tool ultrarrápida
-- **Tailwind CSS** - Framework CSS utility-first
-- **Vue Router 4** - Roteamento SPA
-- **Pinia** - Gerenciamento de estado
-- **Axios** - Cliente HTTP
+
+-   **Vue.js 3** - Framework JavaScript progressivo
+-   **Vite** - Build tool ultrarrápida
+-   **Tailwind CSS** - Framework CSS utility-first
+-   **Vue Router 4** - Roteamento SPA
+-   **Pinia** - Gerenciamento de estado
+-   **Axios** - Cliente HTTP
 
 ### Backend
-- **Laravel 10+** - Framework PHP moderno
-- **Laravel Sanctum** - Autenticação API
-- **MySQL** - Banco de dados relacional
-- **Eloquent ORM** - Mapeamento objeto-relacional
-- **Laravel Validation** - Validação robusta
-- **JWT Authentication** - Tokens seguros
+
+-   **Laravel 10+** - Framework PHP moderno
+-   **Laravel Sanctum** - Autenticação API
+-   **MySQL** - Banco de dados relacional
+-   **Eloquent ORM** - Mapeamento objeto-relacional
+-   **Laravel Validation** - Validação robusta
+-   **JWT Authentication** - Tokens seguros
 
 ### DevOps
-- **Docker** - Containerização
-- **Composer** - Gerenciador de dependências PHP
-- **npm** - Gerenciador de pacotes Node.js
-- **Git** - Controle de versão
+
+-   **Docker** - Containerização
+-   **Composer** - Gerenciador de dependências PHP
+-   **npm** - Gerenciador de pacotes Node.js
+-   **Git** - Controle de versão
 
 ## 🚀 Instalação Rápida
 
 ### Pré-requisitos
 
-- **PHP 8.2+**
-- **Node.js 18+**
-- **Composer**
-- **MySQL 8+**
-- **Git**
+-   **PHP 8.2+**
+-   **Node.js 18+**
+-   **Composer**
+-   **MySQL 8+**
+-   **Git**
 
 ### 📦 Deploy Automatizado
 
@@ -62,15 +66,17 @@ cd Chinelos-karibe-na\ 2
 ```
 
 O script automatizado irá:
-- ✅ Verificar pré-requisitos
-- ✅ Instalar dependências do frontend e backend
-- ✅ Configurar arquivos de ambiente
-- ✅ Criar scripts de inicialização
-- ✅ Configurar permissões
+
+-   ✅ Verificar pré-requisitos
+-   ✅ Instalar dependências do frontend e backend
+-   ✅ Configurar arquivos de ambiente
+-   ✅ Criar scripts de inicialização
+-   ✅ Configurar permissões
 
 ### 🔧 Instalação Manual
 
 #### Frontend (Vue.js)
+
 ```bash
 cd frontend-vue
 npm install
@@ -79,6 +85,7 @@ npm run dev
 ```
 
 #### Backend (Laravel)
+
 ```bash
 cd backend-laravel
 composer install
@@ -91,53 +98,60 @@ php artisan serve
 ## 🎮 Como Usar
 
 ### Iniciar Aplicação Completa
+
 ```bash
 ./start-all.sh
 ```
 
 ### Iniciar Apenas Frontend
+
 ```bash
 ./start-frontend.sh
 ```
 
 ### Iniciar Apenas Backend
+
 ```bash
 ./start-backend.sh
 ```
 
 ### URLs de Acesso
-- **Frontend**: http://localhost:3002
-- **Backend**: http://localhost:8000
-- **API**: http://localhost:8000/api
+
+-   **Frontend**: http://localhost:3002
+-   **Backend**: http://localhost:8000
+-   **API**: http://localhost:8000/api
 
 ## 📋 Funcionalidades
 
 ### 🛍️ Para Clientes
-- [x] Cadastro e login de usuários
-- [x] Catálogo de produtos com filtros
-- [x] Carrinho de compras dinâmico
-- [x] Processo de checkout seguro
-- [x] Histórico de pedidos
-- [x] Sistema de avaliações
-- [x] Lista de desejos
-- [x] Perfil de usuário
+
+-   [x] Cadastro e login de usuários
+-   [x] Catálogo de produtos com filtros
+-   [x] Carrinho de compras dinâmico
+-   [x] Processo de checkout seguro
+-   [x] Histórico de pedidos
+-   [x] Sistema de avaliações
+-   [x] Lista de desejos
+-   [x] Perfil de usuário
 
 ### 👑 Para Administradores
-- [x] Dashboard administrativo
-- [x] Gestão de produtos (CRUD)
-- [x] Gestão de usuários
-- [x] Gestão de pedidos
-- [x] Sistema de cupons
-- [x] Relatórios e analytics
-- [x] Configurações da loja
+
+-   [x] Dashboard administrativo
+-   [x] Gestão de produtos (CRUD)
+-   [x] Gestão de usuários
+-   [x] Gestão de pedidos
+-   [x] Sistema de cupons
+-   [x] Relatórios e analytics
+-   [x] Configurações da loja
 
 ### 🔌 API REST
-- [x] Endpoints RESTful padronizados
-- [x] Autenticação por tokens
-- [x] Documentação Swagger
-- [x] Rate limiting
-- [x] Versionamento de API
-- [x] Responses padronizadas
+
+-   [x] Endpoints RESTful padronizados
+-   [x] Autenticação por tokens
+-   [x] Documentação Swagger
+-   [x] Rate limiting
+-   [x] Versionamento de API
+-   [x] Responses padronizadas
 
 ## 📁 Estrutura do Projeto
 
@@ -146,20 +160,20 @@ Chinelos-karibe-na 2/
 ├── 📄 README.md              # Este arquivo
 ├── 📄 deploy.sh              # Script de deploy automatizado
 ├── 📄 docker-compose.yml     # Configuração Docker
-├── 
+├──
 ├── 🎨 frontend-vue/          # Aplicação Vue.js
 │   ├── src/                  # Código fonte
 │   ├── public/               # Arquivos públicos
 │   ├── package.json          # Dependências Node.js
 │   └── vite.config.js        # Configuração Vite
-├── 
+├──
 ├── ⚙️ backend-laravel/       # API Laravel
 │   ├── app/                  # Código da aplicação
 │   ├── database/             # Migrações e seeds
 │   ├── routes/               # Definição de rotas
 │   ├── composer.json         # Dependências PHP
 │   └── README.md             # Documentação específica
-└── 
+└──
 └── 🗄️ database/             # Scripts de banco
     └── init.sql              # Estrutura inicial
 ```
@@ -167,6 +181,7 @@ Chinelos-karibe-na 2/
 ## 🔐 Configuração de Ambiente
 
 ### Frontend (.env)
+
 ```env
 VITE_APP_NAME="Karibe Presente Personalizado"
 VITE_API_URL=http://localhost:8000/api
@@ -174,6 +189,7 @@ VITE_APP_URL=http://localhost:3002
 ```
 
 ### Backend (.env)
+
 ```env
 APP_NAME="Karibe Presente Personalizado"
 APP_ENV=local
@@ -194,6 +210,7 @@ SANCTUM_STATEFUL_DOMAINS=localhost:3002
 ## 🧪 Testes
 
 ### Frontend
+
 ```bash
 cd frontend-vue
 npm run test        # Testes unitários
@@ -201,6 +218,7 @@ npm run test:e2e    # Testes E2E
 ```
 
 ### Backend
+
 ```bash
 cd backend-laravel
 php artisan test    # PHPUnit
@@ -208,11 +226,11 @@ php artisan test    # PHPUnit
 
 ## 📚 Documentação
 
-- 📖 [Documentação do Backend](backend-laravel/README.md)
-- 🔄 [Changelog](ATUALIZAÇÃO.md)
-- 🚀 [Guia de Deploy](deploy.sh)
-- 📊 [Monitoramento](MONITORAMENTO.md)
-- ⚡ [Performance](PERFORMANCE.md)
+-   📖 [Documentação do Backend](backend-laravel/README.md)
+-   🔄 [Changelog](ATUALIZAÇÃO.md)
+-   🚀 [Guia de Deploy](deploy.sh)
+-   📊 [Monitoramento](MONITORAMENTO.md)
+-   ⚡ [Performance](PERFORMANCE.md)
 
 ## 🤝 Contribuição
 
@@ -225,24 +243,26 @@ php artisan test    # PHPUnit
 ## 📈 Roadmap
 
 ### v2.0.0 (Em Desenvolvimento)
-- [ ] Sistema de multi-tenant
-- [ ] Chat em tempo real
-- [ ] Notificações push
-- [ ] App mobile React Native
-- [ ] Integração com redes sociais
+
+-   [ ] Sistema de multi-tenant
+-   [ ] Chat em tempo real
+-   [ ] Notificações push
+-   [ ] App mobile React Native
+-   [ ] Integração com redes sociais
 
 ### v1.1.0 (Próxima Release)
-- [ ] Sistema de afiliados
-- [ ] Programa de pontos
-- [ ] Checkout em múltiplas etapas
-- [ ] Integração com correios
+
+-   [ ] Sistema de afiliados
+-   [ ] Programa de pontos
+-   [ ] Checkout em múltiplas etapas
+-   [ ] Integração com correios
 
 ## 📞 Suporte
 
-- 📧 **Email**: suporte@karibepersonalizado.com
-- 📱 **WhatsApp**: +55 (11) 99999-9999
-- 🌐 **Site**: www.karibepersonalizado.com
-- 📚 **Documentação**: docs.karibepersonalizado.com
+-   📧 **Email**: suporte@karibepersonalizado.com
+-   📱 **WhatsApp**: +55 (11) 99999-9999
+-   🌐 **Site**: www.karibepersonalizado.com
+-   📚 **Documentação**: docs.karibepersonalizado.com
 
 ## 📜 Licença
 
@@ -250,10 +270,10 @@ Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para ma
 
 ## 🙏 Agradecimentos
 
-- Time de desenvolvimento
-- Comunidade Laravel
-- Comunidade Vue.js
-- Todos os contribuidores
+-   Time de desenvolvimento
+-   Comunidade Laravel
+-   Comunidade Vue.js
+-   Todos os contribuidores
 
 ---
 
@@ -261,15 +281,15 @@ Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para ma
 
 **🎯 Karibe Presente Personalizado**
 
-*Desenvolvido com ❤️ no Brasil*
+_Desenvolvido com ❤️ no Brasil_
 
 [![Laravel](https://img.shields.io/badge/Laravel-10+-FF2D20?style=for-the-badge&logo=laravel&logoColor=white)](https://laravel.com)
 [![Vue.js](https://img.shields.io/badge/Vue.js-3+-4FC08D?style=for-the-badge&logo=vue.js&logoColor=white)](https://vuejs.org)
 [![PHP](https://img.shields.io/badge/PHP-8.2+-777BB4?style=for-the-badge&logo=php&logoColor=white)](https://php.net)
 [![MySQL](https://img.shields.io/badge/MySQL-8+-4479A1?style=for-the-badge&logo=mysql&logoColor=white)](https://mysql.com)
 
-</div>
-=======
+# </div>
+
 # Projeto Catálogo de Produtos
 
 Este repositório contém um catálogo de produtos em Laravel com foco em boas práticas: PSR-4, DI, repositórios, testes (PHPUnit) e tratamento de exceções de domínio.
@@ -328,18 +348,18 @@ Este projeto inclui cenários básicos de BDD (Behat). Para evitar conflitos de 
 
 Pré-requisitos
 
-- Docker e docker-compose instalados na sua máquina.
-- Pelo menos 4GB de RAM livre para executar Selenium + MySQL + PHP/Nginx containers.
+-   Docker e docker-compose instalados na sua máquina.
+-   Pelo menos 4GB de RAM livre para executar Selenium + MySQL + PHP/Nginx containers.
 
 Rodando Behat (recomendado)
 
-1) Build + run (modo único — builda e executa o runner que roda os testes):
+1. Build + run (modo único — builda e executa o runner que roda os testes):
 
 ```bash
 ./scripts/run-behat-docker.sh behat
 ```
 
-2) Ou, para iniciar os serviços em background e depois executar o runner:
+2. Ou, para iniciar os serviços em background e depois executar o runner:
 
 ```bash
 ./scripts/run-behat-docker.sh up
@@ -364,11 +384,11 @@ O repositório inclui um perfil separado para execução com Mink + Selenium (`b
 
 Troubleshooting comum
 
-- Permissão negada ao conectar com Docker daemon: verifique se seu usuário pertence ao grupo `docker` ou execute via `sudo`.
-- Portas em uso: por padrão o compose publica `8000` (nginx) e `4444` (selenium). Se já houver processos, pare-os ou altere as portas em `docker-compose.bdd.yml`.
-- Contêiner `behat` falhando em `composer install`: verifique conectividade com packagist (proxy/firewall) ou monte o `~/.composer` corretamente; você pode também executar `./scripts/run-behat-docker.sh up` e entrar no container (`docker-compose -f docker-compose.bdd.yml exec behat bash`) para diagnosticar manualmente.
-- MySQL não pronto: o compose inclui healthchecks e `wait-for.sh`, mas em máquinas lentas aumente os `retries`/`start_period` no `docker-compose.bdd.yml` para dar mais tempo ao MySQL.
-- Selenium falhando: confira se a versão `selenium/standalone-chrome` é compatível com o driver; logs do container mostram detalhes em `/var/log/selenium`.
+-   Permissão negada ao conectar com Docker daemon: verifique se seu usuário pertence ao grupo `docker` ou execute via `sudo`.
+-   Portas em uso: por padrão o compose publica `8000` (nginx) e `4444` (selenium). Se já houver processos, pare-os ou altere as portas em `docker-compose.bdd.yml`.
+-   Contêiner `behat` falhando em `composer install`: verifique conectividade com packagist (proxy/firewall) ou monte o `~/.composer` corretamente; você pode também executar `./scripts/run-behat-docker.sh up` e entrar no container (`docker-compose -f docker-compose.bdd.yml exec behat bash`) para diagnosticar manualmente.
+-   MySQL não pronto: o compose inclui healthchecks e `wait-for.sh`, mas em máquinas lentas aumente os `retries`/`start_period` no `docker-compose.bdd.yml` para dar mais tempo ao MySQL.
+-   Selenium falhando: confira se a versão `selenium/standalone-chrome` é compatível com o driver; logs do container mostram detalhes em `/var/log/selenium`.
 
 Como rodar no CI
 
@@ -449,4 +469,5 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
->>>>>>> 77199a77650bbeb15b4a0e9e4400ec62163ea760
+
+> > > > > > > 77199a77650bbeb15b4a0e9e4400ec62163ea760

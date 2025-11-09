@@ -17,6 +17,7 @@ class CartController extends Controller
 
     public function __construct(CartService $cartService)
     {
+        parent::__construct();
         $this->middleware('auth:sanctum');
         $this->cartService = $cartService;
     }

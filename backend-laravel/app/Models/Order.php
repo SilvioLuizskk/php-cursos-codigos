@@ -78,4 +78,45 @@ class Order extends Model
             'payment_status' => 'cancelled'
         ]);
     }
+
+    /**
+     * Retorna o texto do status do pedido
+     */
+    public function getStatusText(): string
+    {
+        return match($this->status) {
+            'pending' => 'Pendente',
+            'processing' => 'Em Processamento',
+            'shipped' => 'Enviado',
+            'delivered' => 'Entregue',
+            'cancelled' => 'Cancelado',
+            'refunded' => 'Reembolsado',
+            default => 'Desconhecido'
+        };
+    }
+
+    /**
+     * Retorna o texto do status de pagamento
+     */
+    public function getPaymentStatusText(): string
+    {
+        return match($this->payment_status) {
+            'pending' => 'Pendente',
+            'paid' => 'Pago',
+            'failed' => 'Falhou',
+            'cancelled' => 'Cancelado',
+            'refunded' => 'Reembolsado',
+            default => 'Desconhecido'
+        };
+    }
+
+    /**
+     * Verifica se o pedido pode ser devolvido
+     */
+    public function canBeReturned(): bool
+    {
+        return $this->status === 'delivered' &&
+               $this->delivered_at &&
+               $this->delivered_at->diffInDays(now()) <= 30; // 30 dias para devolução
+    }
 }

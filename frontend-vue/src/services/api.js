@@ -1,9 +1,11 @@
 import axios from "axios";
-import { useNotification } from "@/composables/useNotification";
-import { useAuth } from "@/composables/useAuth";
+// Avoid calling composables (useNotification/useAuth) here because
+// this file runs outside of component setup() and calling inject()
+// will emit warnings. Use safe fallbacks that read localStorage and
+// emit a global event for notifications instead.
 
 const API_BASE_URL =
-    import.meta.env.VITE_API_URL || "http://localhost:8001/api";
+    import.meta.env.VITE_API_URL || "http://127.0.0.1:8100/api";
 
 // Configurar cliente axios
 export const apiClient = axios.create({
@@ -13,6 +15,7 @@ export const apiClient = axios.create({
         Accept: "application/json",
     },
     timeout: 30000, // Aumentar timeout para requests mais longos
+    withCredentials: true, // Necessário para Sanctum (cookies)
 });
 
 // Variáveis para controle de refresh
@@ -36,13 +39,8 @@ apiClient.interceptors.request.use(
     (config) => {
         // Centralizar leitura do token pelo useAuth, se possível
         let token = null;
-        try {
-            // useAuth pode ser chamado só em contexto de componente, então fallback para localStorage
-            token =
-                useAuth().token?.value || localStorage.getItem("auth_token");
-        } catch (e) {
-            token = localStorage.getItem("auth_token");
-        }
+        // Ler token diretamente do localStorage (seguro fora de setup)
+        token = localStorage.getItem("auth_token");
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }
@@ -126,16 +124,10 @@ apiClient.interceptors.response.use(
                 // Retentar requisição original
                 return apiClient(originalRequest);
             } catch (refreshError) {
-                // Se falhar ao renovar token, fazer logout
+                // Se falhar ao renovar token, limpar estado local e forçar logout
                 processQueue(refreshError, null);
-
-                // Chamar logout do useAuth para garantir estado reativo
-                try {
-                    useAuth().logout();
-                } catch (e) {
-                    localStorage.removeItem("auth_token");
-                    localStorage.removeItem("auth_user");
-                }
+                localStorage.removeItem("auth_token");
+                localStorage.removeItem("auth_user");
                 // Redirecionar para login se não estiver já lá
                 if (!window.location.pathname.includes("/login")) {
                     window.location.href = "/login";
@@ -166,21 +158,44 @@ apiClient.interceptors.response.use(
 
         // Tratamento de outros erros HTTP
 
-        // Notificação global de erro amigável
-        const { showNotification } = useNotification();
+        // Notificação global de erro amigável (usar fallback seguro)
+        const showNotificationSafe = (message, type = "error") => {
+            // Permite a aplicação registrar um handler global: window.__APP_SHOW_NOTIFICATION__
+            if (
+                window &&
+                typeof window.__APP_SHOW_NOTIFICATION__ === "function"
+            ) {
+                try {
+                    window.__APP_SHOW_NOTIFICATION__({ message, type });
+                    return;
+                } catch (e) {
+                    // fallthrough to console
+                }
+            }
+            // Fallbacks: console + alert (somente em dev)
+            if (process.env.NODE_ENV === "development") {
+                // eslint-disable-next-line no-alert
+                alert(`${type.toUpperCase()}: ${message}`);
+            } else {
+                console[type === "error" ? "error" : "log"](
+                    `${type}: ${message}`,
+                );
+            }
+        };
+
         if (error.response) {
             switch (error.response.status) {
                 case 403:
-                    showNotification("Acesso negado", "error");
+                    showNotificationSafe("Acesso negado", "error");
                     break;
                 case 404:
-                    showNotification("Recurso não encontrado", "error");
+                    showNotificationSafe("Recurso não encontrado", "error");
                     break;
                 case 422:
                     // Erros de validação - não notificar, deixar o componente tratar
                     break;
                 case 429:
-                    showNotification(
+                    showNotificationSafe(
                         "Muitas requisições. Tente novamente em alguns segundos.",
                         "error",
                     );
@@ -189,24 +204,24 @@ apiClient.interceptors.response.use(
                 case 502:
                 case 503:
                 case 504:
-                    showNotification(
+                    showNotificationSafe(
                         "Erro interno do servidor. Tente novamente.",
                         "error",
                     );
                     break;
                 default:
-                    showNotification(
+                    showNotificationSafe(
                         error.response.data?.message || error.message,
                         "error",
                     );
             }
         } else if (error.request) {
-            showNotification(
+            showNotificationSafe(
                 "Erro de conexão. Verifique sua internet.",
                 "error",
             );
         } else {
-            showNotification("Erro inesperado: " + error.message, "error");
+            showNotificationSafe("Erro inesperado: " + error.message, "error");
         }
 
         return Promise.reject(error);
@@ -266,3 +281,17 @@ if (import.meta.env.DEV) {
         },
     );
 }
+
+// Função para obter CSRF token (necessário para Sanctum)
+export const getCsrfToken = async () => {
+    try {
+        await axios.get(
+            `${API_BASE_URL.replace("/api", "")}/sanctum/csrf-cookie`,
+            {
+                withCredentials: true,
+            },
+        );
+    } catch (error) {
+        console.warn("Erro ao obter CSRF token:", error);
+    }
+};

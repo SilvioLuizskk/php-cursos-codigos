@@ -174,6 +174,45 @@ export function useAuth() {
         localStorage.setItem("auth_user", JSON.stringify(newUser));
     }
 
+    // Solicitar reset de senha
+    async function forgotPassword(email) {
+        loading.value = true;
+        error.value = null;
+
+        try {
+            const response = await authService.forgotPassword(email);
+            showNotification("Email de recuperação enviado!", "success");
+            return response;
+        } catch (err) {
+            error.value =
+                err.response?.data?.message ||
+                "Erro ao enviar email de recuperação";
+            showNotification(error.value, "error");
+            throw err;
+        } finally {
+            loading.value = false;
+        }
+    }
+
+    // Redefinir senha
+    async function resetPassword(data) {
+        loading.value = true;
+        error.value = null;
+
+        try {
+            const response = await authService.resetPassword(data);
+            showNotification("Senha redefinida com sucesso!", "success");
+            return response;
+        } catch (err) {
+            error.value =
+                err.response?.data?.message || "Erro ao redefinir senha";
+            showNotification(error.value, "error");
+            throw err;
+        } finally {
+            loading.value = false;
+        }
+    }
+
     // Inicializar ao criar o composable
     initUser();
 
@@ -191,5 +230,7 @@ export function useAuth() {
         checkAuth,
         setToken,
         setUser,
+        forgotPassword,
+        resetPassword,
     };
 }

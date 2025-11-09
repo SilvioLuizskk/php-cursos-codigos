@@ -7,6 +7,7 @@ use App\Repositories\ProductRepository;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Cache;
 
 class ProductService
 {
@@ -75,6 +76,19 @@ class ProductService
             ->orderBy('created_at', 'desc')
             ->limit(10)
             ->get();
+    }
+
+    /**
+     * Obter produtos mais vendidos (cacheado)
+     */
+    public function getBestsellers(int $limit = 10): Collection
+    {
+        return Cache::remember("products:bestsellers:{$limit}", 3600, function () use ($limit) {
+            return Product::active()
+                ->orderByDesc('sales_count')
+                ->limit($limit)
+                ->get();
+        });
     }
 
     /**

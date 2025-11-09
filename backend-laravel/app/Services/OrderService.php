@@ -9,11 +9,19 @@ use Illuminate\Support\Str;
 
 class OrderService
 {
+    private OrderRepositoryInterface $orderRepository;
+    private CartRepositoryInterface $cartRepository;
+    private ProductRepositoryInterface $productRepository;
+
     public function __construct(
-        private readonly OrderRepositoryInterface $orderRepository,
-        private readonly CartRepositoryInterface $cartRepository,
-        private readonly ProductRepositoryInterface $productRepository
-    ) {}
+        OrderRepositoryInterface $orderRepository,
+        CartRepositoryInterface $cartRepository,
+        ProductRepositoryInterface $productRepository
+    ) {
+        $this->orderRepository = $orderRepository;
+        $this->cartRepository = $cartRepository;
+        $this->productRepository = $productRepository;
+    }
 
     public function createOrder($userId, array $data)
     {

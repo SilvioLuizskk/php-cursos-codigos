@@ -12,7 +12,7 @@ class OrderResource extends JsonResource
      *
      * @return array<string, mixed>
      */
-    public function toArray(Request $request): array
+    public function toArray($request): array
     {
         return [
             'id' => $this->id,
@@ -44,7 +44,7 @@ class OrderResource extends JsonResource
             // Observações
             'notes' => $this->notes,
             'admin_notes' => $this->when(
-                $request->user()?->role === 'admin',
+                $this->user()?->role === 'admin',
                 $this->admin_notes
             ),
 
