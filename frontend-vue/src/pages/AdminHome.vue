@@ -188,165 +188,167 @@
                                 preview-alt="Preview do hero"
                             />
                         </div>
+                    </div>
                 </div>
-            </div>
 
-            <!-- Featured Categories Editor -->
-            <div class="bg-white rounded-lg shadow overflow-hidden">
-                <div class="px-6 py-4 border-b bg-green-50">
-                    <h2 class="text-lg font-semibold text-gray-900">
-                        Categorias em Destaque
-                    </h2>
-                </div>
-                <div class="p-6">
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div
-                            v-for="category in homeData.featuredCategories"
-                            :key="category.id"
-                            class="border rounded p-4"
-                        >
-                            <div class="space-y-3">
-                                <div>
-                                    <label
-                                        class="block text-sm font-medium text-gray-700 mb-1"
-                                        >Nome da Categoria</label
-                                    >
-                                    <input
-                                        v-model="category.name"
-                                        type="text"
-                                        class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                    />
-                                </div>
-                                <div>
-                                    <ImageUpload
-                                        v-model="category.image"
-                                        label="Imagem da Categoria"
-                                        preview-alt="Preview da categoria"
-                                    />
+                <!-- Featured Categories Editor -->
+                <div class="bg-white rounded-lg shadow overflow-hidden">
+                    <div class="px-6 py-4 border-b bg-green-50">
+                        <h2 class="text-lg font-semibold text-gray-900">
+                            Categorias em Destaque
+                        </h2>
+                    </div>
+                    <div class="p-6">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div
+                                v-for="category in homeData.featuredCategories"
+                                :key="category.id"
+                                class="border rounded p-4"
+                            >
+                                <div class="space-y-3">
+                                    <div>
+                                        <label
+                                            class="block text-sm font-medium text-gray-700 mb-1"
+                                            >Nome da Categoria</label
+                                        >
+                                        <input
+                                            v-model="category.name"
+                                            type="text"
+                                            class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        />
+                                    </div>
+                                    <div>
+                                        <ImageUpload
+                                            v-model="category.image"
+                                            label="Imagem da Categoria"
+                                            preview-alt="Preview da categoria"
+                                        />
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Promotional Banner Editor -->
-            <div class="bg-white rounded-lg shadow overflow-hidden">
-                <div class="px-6 py-4 border-b bg-purple-50">
-                    <div class="flex justify-between items-center">
-                        <h2 class="text-lg font-semibold text-gray-900">
-                            Banner Promocional
-                        </h2>
-                        <label class="flex items-center">
-                            <input
-                                v-model="homeData.promotionalBanner.active"
-                                type="checkbox"
-                                class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                            />
-                            <span class="ml-2 text-sm text-gray-700"
-                                >Ativar banner</span
-                            >
-                        </label>
+                <!-- Promotional Banner Editor -->
+                <div class="bg-white rounded-lg shadow overflow-hidden">
+                    <div class="px-6 py-4 border-b bg-purple-50">
+                        <div class="flex justify-between items-center">
+                            <h2 class="text-lg font-semibold text-gray-900">
+                                Banner Promocional
+                            </h2>
+                            <label class="flex items-center">
+                                <input
+                                    v-model="homeData.promotionalBanner.active"
+                                    type="checkbox"
+                                    class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                />
+                                <span class="ml-2 text-sm text-gray-700"
+                                    >Ativar banner</span
+                                >
+                            </label>
+                        </div>
                     </div>
-                </div>
-                <div
-                    v-if="homeData.promotionalBanner.active"
-                    class="p-6 space-y-4"
-                >
-                    <div>
-                        <label
-                            class="block text-sm font-medium text-gray-700 mb-1"
-                            >Título do Banner</label
-                        >
-                        <input
-                            v-model="homeData.promotionalBanner.title"
-                            type="text"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        />
-                    </div>
-                    <div>
-                        <label
-                            class="block text-sm font-medium text-gray-700 mb-1"
-                            >Descrição</label
-                        >
-                        <textarea
-                            v-model="homeData.promotionalBanner.description"
-                            rows="3"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        ></textarea>
-                    </div>
-                    <div>
-                        <label
-                            class="block text-sm font-medium text-gray-700 mb-1"
-                            >Texto do Botão</label
-                        >
-                        <input
-                            v-model="homeData.promotionalBanner.buttonText"
-                            type="text"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        />
-                    </div>
-                </div>
-            </div>
-
-            <!-- Featured Products Editor -->
-            <div class="bg-white rounded-lg shadow overflow-hidden">
-                <div class="px-6 py-4 border-b bg-yellow-50">
-                    <h2 class="text-lg font-semibold text-gray-900">
-                        Produtos em Destaque
-                    </h2>
-                </div>
-                <div class="p-6 space-y-4">
-                    <div>
-                        <label
-                            class="block text-sm font-medium text-gray-700 mb-1"
-                            >Título da Seção</label
-                        >
-                        <input
-                            v-model="homeData.featuredProducts.title"
-                            type="text"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        />
-                    </div>
-
                     <div
-                        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"
+                        v-if="homeData.promotionalBanner.active"
+                        class="p-6 space-y-4"
                     >
+                        <div>
+                            <label
+                                class="block text-sm font-medium text-gray-700 mb-1"
+                                >Título do Banner</label
+                            >
+                            <input
+                                v-model="homeData.promotionalBanner.title"
+                                type="text"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            />
+                        </div>
+                        <div>
+                            <label
+                                class="block text-sm font-medium text-gray-700 mb-1"
+                                >Descrição</label
+                            >
+                            <textarea
+                                v-model="homeData.promotionalBanner.description"
+                                rows="3"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            ></textarea>
+                        </div>
+                        <div>
+                            <label
+                                class="block text-sm font-medium text-gray-700 mb-1"
+                                >Texto do Botão</label
+                            >
+                            <input
+                                v-model="homeData.promotionalBanner.buttonText"
+                                type="text"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Featured Products Editor -->
+                <div class="bg-white rounded-lg shadow overflow-hidden">
+                    <div class="px-6 py-4 border-b bg-yellow-50">
+                        <h2 class="text-lg font-semibold text-gray-900">
+                            Produtos em Destaque
+                        </h2>
+                    </div>
+                    <div class="p-6 space-y-4">
+                        <div>
+                            <label
+                                class="block text-sm font-medium text-gray-700 mb-1"
+                                >Título da Seção</label
+                            >
+                            <input
+                                v-model="homeData.featuredProducts.title"
+                                type="text"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            />
+                        </div>
+
                         <div
-                            v-for="product in homeData.featuredProducts.items"
-                            :key="product.id"
-                            class="border rounded p-4"
+                            class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"
                         >
-                            <div class="space-y-3">
-                                <div>
-                                    <label
-                                        class="block text-sm font-medium text-gray-700 mb-1"
-                                        >Nome do Produto</label
-                                    >
-                                    <input
-                                        v-model="product.name"
-                                        type="text"
-                                        class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                    />
-                                </div>
-                                <div>
-                                    <label
-                                        class="block text-sm font-medium text-gray-700 mb-1"
-                                        >Preço</label
-                                    >
-                                    <input
-                                        v-model.number="product.price"
-                                        type="number"
-                                        step="0.01"
-                                        class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                    />
-                                </div>
-                                <div>
-                                    <ImageUpload
-                                        v-model="product.image"
-                                        label="Imagem do Produto"
-                                        preview-alt="Preview do produto"
-                                    />
+                            <div
+                                v-for="product in homeData.featuredProducts
+                                    .items"
+                                :key="product.id"
+                                class="border rounded p-4"
+                            >
+                                <div class="space-y-3">
+                                    <div>
+                                        <label
+                                            class="block text-sm font-medium text-gray-700 mb-1"
+                                            >Nome do Produto</label
+                                        >
+                                        <input
+                                            v-model="product.name"
+                                            type="text"
+                                            class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label
+                                            class="block text-sm font-medium text-gray-700 mb-1"
+                                            >Preço</label
+                                        >
+                                        <input
+                                            v-model.number="product.price"
+                                            type="number"
+                                            step="0.01"
+                                            class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        />
+                                    </div>
+                                    <div>
+                                        <ImageUpload
+                                            v-model="product.image"
+                                            label="Imagem do Produto"
+                                            preview-alt="Preview do produto"
+                                        />
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -356,7 +358,6 @@
         </div>
     </div>
 </template>
-
 <script setup>
 import { ref, onMounted } from "vue";
 import { useNotification } from "@/composables/useNotification";

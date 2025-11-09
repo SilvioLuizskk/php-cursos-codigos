@@ -20,6 +20,64 @@
                         Descubra nossa coleção de chinelos personalizados
                     </p>
                 </div>
+
+                <!-- Controles de Visualização e Ordenação -->
+                <div
+                    class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 p-4 bg-white rounded-lg shadow-sm"
+                >
+                    <div class="flex items-center gap-4">
+                        <span class="text-sm text-gray-600"
+                            >{{ products.length }} produtos</span
+                        >
+                        <div class="flex items-center gap-2">
+                            <button
+                                @click="viewMode = 'grid'"
+                                :class="[
+                                    'p-2 rounded-md transition-colors',
+                                    viewMode === 'grid'
+                                        ? 'bg-blue-100 text-blue-600'
+                                        : 'text-gray-400 hover:text-gray-600',
+                                ]"
+                            >
+                                <i class="fas fa-th"></i>
+                            </button>
+                            <button
+                                @click="viewMode = 'list'"
+                                :class="[
+                                    'p-2 rounded-md transition-colors',
+                                    viewMode === 'list'
+                                        ? 'bg-blue-100 text-blue-600'
+                                        : 'text-gray-400 hover:text-gray-600',
+                                ]"
+                            >
+                                <i class="fas fa-list"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <label for="sort" class="text-sm text-gray-600"
+                            >Ordenar por:</label
+                        >
+                        <select
+                            id="sort"
+                            v-model="sortBy"
+                            @change="applySorting"
+                            class="px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        >
+                            <option value="name">Nome</option>
+                            <option value="price-low">
+                                Preço: Menor para Maior
+                            </option>
+                            <option value="price-high">
+                                Preço: Maior para Menor
+                            </option>
+                            <option value="rating">Avaliação</option>
+                            <option value="newest">Mais Recentes</option>
+                        </select>
+                    </div>
+                </div>
+
                 <!-- Filtros rápidos mobile -->
                 <div class="md:hidden mb-4">
                     <button
@@ -49,102 +107,154 @@
                 </div>
                 <div
                     v-else
-                    class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
+                    :class="[
+                        'gap-6',
+                        viewMode === 'grid'
+                            ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
+                            : 'flex flex-col',
+                    ]"
                 >
-                    <div
-                        v-for="product in products"
-                        :key="product.id"
-                        class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
+                    <TransitionGroup
+                        name="product"
+                        tag="div"
+                        :class="viewMode === 'grid' ? 'contents' : ''"
                     >
                         <div
-                            class="aspect-square bg-gray-200 flex items-center justify-center"
+                            v-for="product in products"
+                            :key="product.id"
+                            :class="[
+                                'bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 group',
+                                viewMode === 'list' ? 'flex mb-4' : '',
+                            ]"
                         >
-                            <i
-                                class="fas fa-flip-flops text-4xl text-gray-400"
-                            ></i>
-                        </div>
-                        <div class="p-4">
-                            <h3 class="font-semibold text-gray-900 mb-2">
-                                {{ product.name }}
-                            </h3>
-                            <p class="text-gray-600 text-sm mb-2 line-clamp-2">
-                                {{ product.description }}
-                            </p>
-                            <div class="flex items-center mb-2">
-                                <div class="flex text-yellow-400">
-                                    <i
-                                        v-for="n in 5"
-                                        :key="n"
-                                        :class="
-                                            n <= product.rating
-                                                ? 'fas fa-star'
-                                                : 'far fa-star'
-                                        "
-                                    ></i>
-                                </div>
-                                <span class="text-sm text-gray-500 ml-2"
-                                    >({{ product.rating || 0 }})</span
-                                >
-                            </div>
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <span
-                                        class="text-lg font-bold text-blue-600"
-                                        >R$ {{ product.price }}</span
-                                    >
-                                    <span
-                                        v-if="product.discount_price"
-                                        class="text-sm text-gray-500 line-through ml-2"
-                                        >R$ {{ product.discount_price }}</span
-                                    >
-                                </div>
-                                <button
-                                    @click="handleAddToCart(product)"
-                                    class="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                    :disabled="
-                                        product.stock === 0 ||
-                                        isAddingToCart(product.id)
-                                    "
-                                >
-                                    <i class="fas fa-cart-plus mr-1"></i>
-                                    <span v-if="isAddingToCart(product.id)"
-                                        >Adicionando...</span
-                                    >
-                                    <span v-else>{{
-                                        product.stock === 0
-                                            ? "Esgotado"
-                                            : "Adicionar"
-                                    }}</span>
-                                </button>
-                            </div>
-                            <div class="mt-2">
-                                <span
+                            <div
+                                :class="[
+                                    'relative overflow-hidden',
+                                    viewMode === 'grid'
+                                        ? 'aspect-square'
+                                        : 'w-48 h-48 flex-shrink-0',
+                                ]"
+                            >
+                                <div
                                     :class="[
-                                        'text-xs px-2 py-1 rounded',
-                                        product.stock > 10
-                                            ? 'bg-green-100 text-green-800'
-                                            : product.stock > 0
-                                              ? 'bg-yellow-100 text-yellow-800'
-                                              : 'bg-red-100 text-red-800',
+                                        'flex items-center justify-center group-hover:scale-110 transition-transform duration-500',
+                                        viewMode === 'grid'
+                                            ? 'w-full h-full bg-gradient-to-br from-blue-100 to-purple-100'
+                                            : 'w-full h-full bg-gradient-to-br from-blue-100 to-purple-100',
                                     ]"
                                 >
-                                    {{
-                                        product.stock > 10
-                                            ? "Em estoque"
-                                            : product.stock > 0
-                                              ? `Restam ${product.stock}`
-                                              : "Esgotado"
-                                    }}
-                                </span>
-                                <span
-                                    v-if="product.featured"
-                                    class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded ml-2"
-                                    >Destaque</span
+                                    <i
+                                        class="fas fa-flip-flops text-5xl text-blue-400 group-hover:text-blue-600 transition-colors duration-300"
+                                    ></i>
+                                </div>
+                                <!-- Badge de desconto -->
+                                <div
+                                    v-if="product.discount_price"
+                                    class="absolute top-3 left-3 bg-red-500 text-white px-2 py-1 rounded-full text-xs font-semibold"
                                 >
+                                    -{{
+                                        Math.round(
+                                            (1 -
+                                                product.price /
+                                                    product.discount_price) *
+                                                100,
+                                        )
+                                    }}%
+                                </div>
+                                <!-- Badge de novo -->
+                                <div
+                                    v-if="product.is_new"
+                                    class="absolute top-3 right-3 bg-green-500 text-white px-2 py-1 rounded-full text-xs font-semibold"
+                                >
+                                    Novo
+                                </div>
+                            </div>
+                            <div
+                                :class="
+                                    viewMode === 'grid' ? 'p-6' : 'p-6 flex-1'
+                                "
+                            >
+                                <h3
+                                    :class="[
+                                        'font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors',
+                                        viewMode === 'grid'
+                                            ? 'text-lg'
+                                            : 'text-xl',
+                                    ]"
+                                >
+                                    {{ product.name }}
+                                </h3>
+                                <p
+                                    :class="[
+                                        'text-gray-600 mb-3 line-clamp-2',
+                                        viewMode === 'grid'
+                                            ? 'text-sm'
+                                            : 'text-base',
+                                    ]"
+                                >
+                                    {{ product.description }}
+                                </p>
+                                <div class="flex items-center mb-3">
+                                    <div class="flex text-yellow-400">
+                                        <i
+                                            v-for="n in 5"
+                                            :key="n"
+                                            :class="
+                                                n <= (product.rating || 0)
+                                                    ? 'fas fa-star'
+                                                    : 'far fa-star'
+                                            "
+                                        ></i>
+                                    </div>
+                                    <span class="text-sm text-gray-500 ml-2"
+                                        >({{ product.reviews || 0 }})</span
+                                    >
+                                </div>
+                                <div
+                                    :class="[
+                                        'flex items-center justify-between',
+                                        viewMode === 'grid' ? 'mb-4' : 'mb-0',
+                                    ]"
+                                >
+                                    <div class="flex flex-col">
+                                        <span
+                                            :class="[
+                                                'font-bold text-blue-600',
+                                                viewMode === 'grid'
+                                                    ? 'text-lg'
+                                                    : 'text-xl',
+                                            ]"
+                                            >R$ {{ product.price }}</span
+                                        >
+                                        <span
+                                            v-if="product.discount_price"
+                                            class="text-sm text-gray-500 line-through"
+                                            >R$
+                                            {{ product.discount_price }}</span
+                                        >
+                                    </div>
+                                    <div class="flex gap-2">
+                                        <button
+                                            @click="quickView(product)"
+                                            class="p-2 text-gray-400 hover:text-blue-600 transition-colors"
+                                            title="Visualização rápida"
+                                        >
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button
+                                            @click="addToCart(product)"
+                                            class="p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                                            title="Adicionar ao carrinho"
+                                        >
+                                            <i class="fas fa-cart-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    </TransitionGroup>
                 </div>
+
                 <!-- Paginação -->
                 <div
                     v-if="pagination.total > pagination.per_page"
@@ -156,10 +266,10 @@
                             :key="page"
                             @click="changePage(page)"
                             :class="[
-                                'px-3 py-2 rounded',
+                                'px-3 py-2 rounded transition-all duration-200',
                                 page === pagination.current_page
-                                    ? 'bg-blue-600 text-white'
-                                    : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50',
+                                    ? 'bg-blue-600 text-white shadow-lg'
+                                    : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 hover:shadow-md',
                             ]"
                         >
                             {{ page }}
@@ -167,6 +277,7 @@
                     </nav>
                 </div>
             </div>
+
             <!-- Modal Filtros Mobile -->
             <transition name="fade">
                 <div
@@ -228,6 +339,10 @@ export default {
             "Rider",
             "Personalizado",
         ]);
+
+        // Estado da visualização
+        const viewMode = ref("grid");
+        const sortBy = ref("name");
 
         // Composables
         const { addToCart } = useCart();
@@ -417,6 +532,44 @@ export default {
             showMobileFilters.value = false;
         };
 
+        const applySorting = () => {
+            // Aplicar ordenação baseada no sortBy
+            let sortedProducts = [...products.value];
+
+            switch (sortBy.value) {
+                case "name":
+                    sortedProducts.sort((a, b) => a.name.localeCompare(b.name));
+                    break;
+                case "price-low":
+                    sortedProducts.sort(
+                        (a, b) => parseFloat(a.price) - parseFloat(b.price),
+                    );
+                    break;
+                case "price-high":
+                    sortedProducts.sort(
+                        (a, b) => parseFloat(b.price) - parseFloat(a.price),
+                    );
+                    break;
+                case "rating":
+                    sortedProducts.sort(
+                        (a, b) => (b.rating || 0) - (a.rating || 0),
+                    );
+                    break;
+                case "newest":
+                    sortedProducts.sort((a, b) => b.id - a.id); // Assumindo que IDs maiores são mais recentes
+                    break;
+                default:
+                    break;
+            }
+
+            products.value = sortedProducts;
+        };
+
+        const quickView = (product) => {
+            // Implementar visualização rápida
+            router.push(`/produto/${product.slug || product.id}`);
+        };
+
         onMounted(() => {
             loadProducts();
         });
@@ -436,6 +589,10 @@ export default {
             categories,
             applySidebarFilters,
             applySidebarFiltersMobile,
+            viewMode,
+            sortBy,
+            applySorting,
+            quickView,
         };
     },
 };
@@ -450,6 +607,7 @@ export default {
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
+    line-clamp: 2;
     overflow: hidden;
 }
 
@@ -489,5 +647,36 @@ export default {
 }
 .btn-outline:hover {
     background: #f0f6ff;
+}
+
+/* Transições para produtos */
+.product-enter-active,
+.product-leave-active {
+    transition: all 0.3s ease;
+}
+
+.product-enter-from {
+    opacity: 0;
+    transform: translateY(20px);
+}
+
+.product-leave-to {
+    opacity: 0;
+    transform: translateY(-20px);
+}
+
+.product-move {
+    transition: transform 0.3s ease;
+}
+
+/* Transições para modal */
+.fade-enter-active,
+.fade-leave-active {
+    transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+    opacity: 0;
 }
 </style>

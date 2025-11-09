@@ -14,11 +14,12 @@ use App\Services\WhatsAppNotifier;
 
 class OrderController extends Controller
 {
+    protected $middleware = ['auth:sanctum'];
+
     protected OrderService $orderService;
 
     public function __construct(OrderService $orderService)
     {
-        $this->middleware('auth:sanctum');
         $this->orderService = $orderService;
     }
 

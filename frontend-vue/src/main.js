@@ -55,6 +55,8 @@ if (typeof window !== "undefined") {
 // Importar páginas
 import Home from "./pages/Home.vue";
 import Login from "./pages/Login.vue";
+import Register from "./pages/Register.vue";
+import ForgotPassword from "./pages/ForgotPassword.vue";
 import ProductList from "./pages/ProductList.vue";
 import Cart from "./pages/Cart.vue";
 import NotFound from "./pages/NotFound.vue";
@@ -82,6 +84,18 @@ const routes = [
         name: "Login",
         component: Login,
         meta: { title: "Login - EstampariaPro" },
+    },
+    {
+        path: "/registrar",
+        name: "Register",
+        component: Register,
+        meta: { title: "Registrar - EstampariaPro" },
+    },
+    {
+        path: "/esqueci-senha",
+        name: "ForgotPassword",
+        component: ForgotPassword,
+        meta: { title: "Esqueci a Senha - EstampariaPro" },
     },
     {
         path: "/produtos",

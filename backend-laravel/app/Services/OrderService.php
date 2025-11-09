@@ -97,9 +97,9 @@ class OrderService
         return $this->orderRepository->find($id);
     }
 
-    public function getUserOrders($userId)
+    public function getUserOrders($userId, array $filters = [])
     {
-        return $this->orderRepository->getUserOrders($userId);
+        return $this->orderRepository->getUserOrders($userId, $filters);
     }
 
     public function cancelOrder($orderId, $userId)

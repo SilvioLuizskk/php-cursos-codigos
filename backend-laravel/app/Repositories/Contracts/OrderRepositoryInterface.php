@@ -8,7 +8,7 @@ interface OrderRepositoryInterface
     public function createItems($orderId, array $items);
     public function find($id);
     public function findByNumber($orderNumber);
-    public function getUserOrders($userId);
+    public function getUserOrders($userId, array $filters = []);
     public function update($id, array $data);
     public function cancel($id);
     public function getOrderStatistics();
