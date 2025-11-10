@@ -52,9 +52,13 @@ if (typeof window !== "undefined") {
     observer.observe(document.head, { childList: true });
 }
 
-// Importar páginas
+// Importar layout do admin
+import AdminLayout from "./components/AdminLayout.vue";
+
+// Importar páginas (apenas as que não são lazy-loaded)
 import Home from "./pages/Home.vue";
 import Login from "./pages/Login.vue";
+import AdminLogin from "./pages/AdminLogin.vue";
 import Register from "./pages/Register.vue";
 import ForgotPassword from "./pages/ForgotPassword.vue";
 import ProductList from "./pages/ProductList.vue";
@@ -62,14 +66,23 @@ import Cart from "./pages/Cart.vue";
 import NotFound from "./pages/NotFound.vue";
 import ProductDetail from "./pages/ProductDetail.vue";
 import Checkout from "./pages/Checkout.vue";
+import Contact from "./pages/Contact.vue";
 import ABDashboard from "./pages/ABDashboard.vue";
 import AdminAB from "./pages/AdminAB.vue";
-import AdminProducts from "./pages/AdminProducts.vue";
 import HealthCheck from "./pages/HealthCheck.vue";
 import Metrics from "./pages/Metrics.vue";
 import UserOrders from "./pages/UserOrders.vue";
 import OrderDetail from "./pages/OrderDetail.vue";
+
+// Importar componentes admin (removendo lazy loading temporariamente)
 import AdminDashboard from "./pages/AdminDashboard.vue";
+import AdminProducts from "./pages/AdminProducts.vue";
+import AdminCategorias from "./pages/AdminCategorias.vue";
+import AdminBanners from "./pages/AdminBanners.vue";
+import AdminPaginas from "./pages/AdminPaginas.vue";
+import AdminConfiguracoes from "./pages/AdminConfiguracoes.vue";
+import AdminPedidos from "./pages/AdminPedidos.vue";
+import AdminMetricas from "./pages/AdminMetricas.vue";
 
 // Configurar rotas
 const routes = [
@@ -84,6 +97,12 @@ const routes = [
         name: "Login",
         component: Login,
         meta: { title: "Login - EstampariaPro" },
+    },
+    {
+        path: "/admin-login",
+        name: "AdminLogin",
+        component: AdminLogin,
+        meta: { title: "Login Admin - EstampariaPro" },
     },
     {
         path: "/registrar",
@@ -108,6 +127,12 @@ const routes = [
         name: "Cart",
         component: Cart,
         meta: { title: "Carrinho - EstampariaPro" },
+    },
+    {
+        path: "/contato",
+        name: "Contact",
+        component: Contact,
+        meta: { title: "Contato - EstampariaPro" },
     },
     {
         path: "/produto/:slug",
@@ -140,10 +165,10 @@ const routes = [
         meta: { title: "Health Check - EstampariaPro" },
     },
     {
-        path: "/metrics",
-        name: "Metrics",
-        component: Metrics,
-        meta: { title: "Métricas - EstampariaPro" },
+        path: "/comunicacao-vertical",
+        name: "ComunicacaoVertical",
+        component: () => import("./components/ComunicacaoVerticalDemo.vue"),
+        meta: { title: "Comunicação Vertical - EstampariaPro" },
     },
     {
         path: "/ab-dashboard",
@@ -153,48 +178,55 @@ const routes = [
     },
     {
         path: "/admin",
-        name: "AdminDashboard",
-        component: AdminDashboard,
+        component: AdminLayout,
         children: [
             {
-                path: "home",
-                name: "AdminHome",
-                component: () => import("./pages/AdminHome.vue"),
+                path: "/admin",
+                name: "AdminDashboard",
+                component: AdminDashboard,
+                meta: { title: "Admin Dashboard - EstampariaPro" },
             },
             {
-                path: "produtos",
+                path: "/admin/produtos",
                 name: "AdminProducts",
-                component: () => import("./pages/AdminProducts.vue"),
+                component: AdminProducts,
+                meta: { title: "Admin Produtos - EstampariaPro" },
             },
             {
-                path: "categorias",
+                path: "/admin/categorias",
                 name: "AdminCategorias",
-                component: () => import("./pages/AdminCategorias.vue"),
+                component: AdminCategorias,
+                meta: { title: "Admin Categorias - EstampariaPro" },
             },
             {
-                path: "banners",
+                path: "/admin/banners",
                 name: "AdminBanners",
-                component: () => import("./pages/AdminBanners.vue"),
+                component: AdminBanners,
+                meta: { title: "Admin Banners - EstampariaPro" },
             },
             {
-                path: "paginas",
+                path: "/admin/paginas",
                 name: "AdminPaginas",
-                component: () => import("./pages/AdminPaginas.vue"),
+                component: AdminPaginas,
+                meta: { title: "Admin Páginas - EstampariaPro" },
             },
             {
-                path: "configuracoes",
+                path: "/admin/configuracoes",
                 name: "AdminConfiguracoes",
-                component: () => import("./pages/AdminConfiguracoes.vue"),
+                component: AdminConfiguracoes,
+                meta: { title: "Admin Configurações - EstampariaPro" },
             },
             {
-                path: "pedidos",
+                path: "/admin/pedidos",
                 name: "AdminPedidos",
-                component: () => import("./pages/AdminPedidos.vue"),
+                component: AdminPedidos,
+                meta: { title: "Admin Pedidos - EstampariaPro" },
             },
             {
-                path: "metricas",
+                path: "/admin/metricas",
                 name: "AdminMetricas",
-                component: () => import("./pages/AdminMetricas.vue"),
+                component: AdminMetricas,
+                meta: { title: "Admin Métricas - EstampariaPro" },
             },
         ],
     },
@@ -206,16 +238,36 @@ const routes = [
     },
 ];
 
+import { useAuth } from "@/composables/useAuth";
 const router = createRouter({
     history: createWebHistory(),
     routes,
 });
 
 // Atualizar título da página
-router.beforeEach((to) => {
+router.beforeEach(async (to, from, next) => {
     document.title = to.meta.title || "EstampariaPro";
+
+    // Proteger rotas admin - TEMPORARIAMENTE DESABILITADO PARA TESTE
+    // if (to.path.startsWith("/admin")) {
+    //     const token = localStorage.getItem("auth_token");
+    //     const userStr = localStorage.getItem("auth_user");
+    //     let user = null;
+    //     try {
+    //         user = userStr ? JSON.parse(userStr) : null;
+    //     } catch (e) {}
+    //     if (!token || !user || !user.is_admin) {
+    //         return next({
+    //             path: "/admin-login",
+    //             query: { redirect: to.fullPath },
+    //         });
+    //     }
+    // }
+    next();
 });
 
+// Debug: log app start to help diagnose mount issues
+console.log("[app] starting - main.js");
 const app = createApp(App);
 app.use(router);
 
@@ -243,4 +295,12 @@ if (sentryDsn) {
         });
 }
 
-app.mount("#app");
+try {
+    app.mount("#app");
+    console.log("[app] mounted successfully");
+} catch (err) {
+    // Ensure runtime mount errors are visible in the browser console
+    console.error("[app] mount error", err);
+    // Re-throw so dev tooling can pick it up
+    throw err;
+}

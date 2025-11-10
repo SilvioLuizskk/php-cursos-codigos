@@ -461,6 +461,7 @@
 <script setup>
 import { ref, onMounted, computed } from "vue";
 import { useNotification } from "@/composables/useNotification";
+import { adminService } from "@/services/adminService";
 
 const { showNotification } = useNotification();
 
@@ -472,6 +473,7 @@ const trackingOrderId = ref(null);
 const trackingCode = ref("");
 const statusFilter = ref("");
 const searchQuery = ref("");
+const loading = ref(false);
 
 const orderStats = computed(() => {
     const stats = {
@@ -483,19 +485,19 @@ const orderStats = computed(() => {
     };
     orders.value.forEach((order) => {
         switch (order.status) {
-            case "Pendente":
+            case "pending":
                 stats.pending++;
                 break;
-            case "Processando":
+            case "processing":
                 stats.processing++;
                 break;
-            case "Enviado":
+            case "shipped":
                 stats.shipped++;
                 break;
-            case "Entregue":
+            case "delivered":
                 stats.delivered++;
                 break;
-            case "Cancelado":
+            case "cancelled":
                 stats.cancelled++;
                 break;
         }
@@ -503,121 +505,17 @@ const orderStats = computed(() => {
     return stats;
 });
 
-// Simulação de dados - substitua por chamadas reais da API
 const loadOrders = async () => {
     try {
-        orders.value = [
-            {
-                id: "00123",
-                customer: {
-                    name: "João Silva",
-                    email: "joao@email.com",
-                    phone: "(11) 99999-9999",
-                },
-                items: [
-                    {
-                        id: 1,
-                        name: "Chinelo Praia Azul",
-                        price: 49.9,
-                        quantity: 1,
-                        image: "https://via.placeholder.com/50x50?text=P1",
-                    },
-                    {
-                        id: 2,
-                        name: "Chinelo Casual Preto",
-                        price: 39.9,
-                        quantity: 2,
-                        image: "https://via.placeholder.com/50x50?text=P2",
-                    },
-                ],
-                total: 129.7,
-                status: "Processando",
-                createdAt: "2024-01-15T10:30:00Z",
-                payment: {
-                    method: "PIX",
-                    status: "Aprovado",
-                    transactionId: "PIX123456",
-                },
-                shipping: {
-                    method: "PAC",
-                    address: "Rua das Flores, 123",
-                    city: "São Paulo",
-                    state: "SP",
-                    zipCode: "01234-567",
-                },
-                trackingCode: null,
-            },
-            {
-                id: "00122",
-                customer: {
-                    name: "Maria Santos",
-                    email: "maria@email.com",
-                    phone: "(11) 88888-8888",
-                },
-                items: [
-                    {
-                        id: 3,
-                        name: "Chinelo Esportivo Branco",
-                        price: 69.9,
-                        quantity: 1,
-                        image: "https://via.placeholder.com/50x50?text=P3",
-                    },
-                ],
-                total: 69.9,
-                status: "Enviado",
-                createdAt: "2024-01-14T15:45:00Z",
-                payment: {
-                    method: "Cartão de Crédito",
-                    status: "Aprovado",
-                    transactionId: "CC789012",
-                },
-                shipping: {
-                    method: "SEDEX",
-                    address: "Av. Paulista, 456",
-                    city: "São Paulo",
-                    state: "SP",
-                    zipCode: "01310-100",
-                },
-                trackingCode: "BR987654321BR",
-            },
-            {
-                id: "00121",
-                customer: {
-                    name: "Pedro Oliveira",
-                    email: "pedro@email.com",
-                    phone: "(11) 77777-7777",
-                },
-                items: [
-                    {
-                        id: 4,
-                        name: "Chinelo Infantil Colorido",
-                        price: 39.9,
-                        quantity: 1,
-                        image: "https://via.placeholder.com/50x50?text=P4",
-                    },
-                ],
-                total: 39.9,
-                status: "Entregue",
-                createdAt: "2024-01-13T09:15:00Z",
-                payment: {
-                    method: "Dinheiro",
-                    status: "Pago",
-                    transactionId: null,
-                },
-                shipping: {
-                    method: "Retirada na Loja",
-                    address: "Rua dos Chinelos, 789",
-                    city: "São Paulo",
-                    state: "SP",
-                    zipCode: "01234-567",
-                },
-                trackingCode: null,
-            },
-        ];
+        loading.value = true;
+        const response = await adminService.getOrders();
+        orders.value = response.data.data || response.data;
         filterOrders();
     } catch (error) {
         console.error("Erro ao carregar pedidos:", error);
         showNotification("Erro ao carregar pedidos", "error");
+    } finally {
+        loading.value = false;
     }
 };
 
@@ -645,22 +543,27 @@ const filterOrders = () => {
 
 const updateOrderStatus = async (orderId, newStatus) => {
     try {
-        const order = orders.value.find((o) => o.id === orderId);
-        if (order) {
-            order.status = newStatus;
-            showNotification(
-                `Status do pedido #${orderId} atualizado para ${newStatus}`,
-                "success",
-            );
-        }
+        await adminService.updateOrder(orderId, { status: newStatus });
+        // Recarregar pedidos após atualização
+        await loadOrders();
+        showNotification(
+            `Status do pedido #${orderId} atualizado para ${newStatus}`,
+            "success",
+        );
     } catch (error) {
         console.error("Erro ao atualizar status:", error);
         showNotification("Erro ao atualizar status do pedido", "error");
     }
 };
 
-const viewOrderDetails = (order) => {
-    selectedOrder.value = order;
+const viewOrderDetails = async (order) => {
+    try {
+        const response = await adminService.getOrder(order.id);
+        selectedOrder.value = response.data;
+    } catch (error) {
+        console.error("Erro ao carregar detalhes do pedido:", error);
+        showNotification("Erro ao carregar detalhes do pedido", "error");
+    }
 };
 
 const addTracking = (order) => {
@@ -692,14 +595,9 @@ const cancelOrder = async (orderId) => {
     if (!confirm("Tem certeza que deseja cancelar este pedido?")) return;
 
     try {
-        const order = orders.value.find((o) => o.id === orderId);
-        if (order) {
-            order.status = "Cancelado";
-            showNotification(
-                `Pedido #${orderId} cancelado com sucesso`,
-                "success",
-            );
-        }
+        await adminService.deleteOrder(orderId);
+        await loadOrders();
+        showNotification(`Pedido #${orderId} cancelado com sucesso`, "success");
     } catch (error) {
         console.error("Erro ao cancelar pedido:", error);
         showNotification("Erro ao cancelar pedido", "error");
@@ -708,14 +606,9 @@ const cancelOrder = async (orderId) => {
 
 const markAsShipped = async (orderId) => {
     try {
-        const order = orders.value.find((o) => o.id === orderId);
-        if (order) {
-            order.status = "Enviado";
-            showNotification(
-                `Pedido #${orderId} marcado como enviado`,
-                "success",
-            );
-        }
+        await adminService.updateOrder(orderId, { status: "shipped" });
+        await loadOrders();
+        showNotification(`Pedido #${orderId} marcado como enviado`, "success");
     } catch (error) {
         console.error("Erro ao marcar como enviado:", error);
         showNotification("Erro ao atualizar status", "error");
@@ -724,14 +617,9 @@ const markAsShipped = async (orderId) => {
 
 const markAsDelivered = async (orderId) => {
     try {
-        const order = orders.value.find((o) => o.id === orderId);
-        if (order) {
-            order.status = "Entregue";
-            showNotification(
-                `Pedido #${orderId} marcado como entregue`,
-                "success",
-            );
-        }
+        await adminService.updateOrder(orderId, { status: "delivered" });
+        await loadOrders();
+        showNotification(`Pedido #${orderId} marcado como entregue`, "success");
     } catch (error) {
         console.error("Erro ao marcar como entregue:", error);
         showNotification("Erro ao atualizar status", "error");

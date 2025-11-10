@@ -344,6 +344,7 @@
 <script setup>
 import { ref, onMounted, computed } from "vue";
 import { useNotification } from "@/composables/useNotification";
+import { adminService } from "@/services/adminService";
 import ImageUpload from "@/components/ImageUpload.vue";
 
 const { showNotification } = useNotification();
@@ -374,43 +375,18 @@ const carouselBanners = computed(() =>
     banners.value.filter((b) => b.position === "carousel"),
 );
 
-// Simulação de API - substitua por chamadas reais quando o backend estiver pronto
+// Carregar banners da API
 const fetchBanners = async () => {
     loading.value = true;
     try {
-        // Simulação - substitua pela chamada real da API
-        banners.value = [
-            {
-                id: 1,
-                title: "Chinelos em Promoção",
-                image: "https://via.placeholder.com/800x400?text=Promoção+Especial",
-                link: "/produtos",
-                position: "hero",
-                active: true,
-                order: 1,
-            },
-            {
-                id: 2,
-                title: "Frete Grátis",
-                image: "https://via.placeholder.com/300x200?text=Frete+Grátis",
-                link: "/carrinho",
-                position: "sidebar",
-                active: true,
-                order: 1,
-            },
-            {
-                id: 3,
-                title: "Novos Modelos",
-                image: "https://via.placeholder.com/400x300?text=Novos+Modelos",
-                link: "/produtos",
-                position: "carousel",
-                active: true,
-                order: 1,
-            },
-        ];
+        console.log("Carregando banners...");
+        const response = await adminService.getBanners();
+        banners.value = response.data || [];
+        console.log("Banners carregados:", banners.value);
     } catch (error) {
         console.error("Erro ao carregar banners:", error);
         showNotification("Erro ao carregar banners", "error");
+        banners.value = [];
     } finally {
         loading.value = false;
     }

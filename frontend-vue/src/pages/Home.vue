@@ -326,6 +326,19 @@
                 </Transition>
             </div>
         </section>
+
+        <!-- Demo Link Section -->
+        <section class="py-8 bg-gray-800 text-white">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                <p class="text-sm opacity-75 mb-2">👨‍💻 Para Desenvolvedores</p>
+                <router-link
+                    to="/comunicacao-vertical"
+                    class="text-blue-400 hover:text-blue-300 underline text-sm"
+                >
+                    Ver Demonstração: Comunicação Vertical Descendente em Vue.js
+                </router-link>
+            </div>
+        </section>
     </div>
 </template>
 

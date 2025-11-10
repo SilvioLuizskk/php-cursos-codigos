@@ -129,4 +129,74 @@ Route::group([], function () {
         Route::delete('/image', [UploadController::class, 'deleteImage']);
         Route::get('/images', [UploadController::class, 'listImages']);
     });
+
+    // ==================== HOME CONFIG (ADMIN) ====================
+    // Banner
+    Route::put('/home-config/banner', [HomeController::class, 'updateBanner']);
+    Route::delete('/home-config/banner/{id}', [HomeController::class, 'deleteBanner']);
+    // Categoria em destaque
+    Route::put('/home-config/category/{id}', [HomeController::class, 'updateFeaturedCategory']);
+    Route::delete('/home-config/category/{id}', [HomeController::class, 'deleteFeaturedCategory']);
+    // Produto em destaque
+    Route::put('/home-config/product/{id}', [HomeController::class, 'updateFeaturedProduct']);
+    Route::delete('/home-config/product/{id}', [HomeController::class, 'deleteFeaturedProduct']);
+});
+
+// ==================== NEWSLETTER ====================
+Route::post('/newsletter/subscribe', [HomeController::class, 'subscribeNewsletter']);
+
+// ==================== ADMIN ROUTES ====================
+use App\Http\Controllers\Api\AdminController;
+
+// TEMPORARIAMENTE SEM AUTENTICAÇÃO PARA TESTE
+Route::prefix('admin')->group(function () {
+    // Dashboard
+    Route::get('/dashboard/stats', [AdminController::class, 'getDashboardStats']);
+    Route::get('/dashboard/charts', [AdminController::class, 'getDashboardCharts']);
+
+    // Produtos Admin
+    Route::get('/products', [AdminController::class, 'getProducts']);
+    Route::post('/products', [AdminController::class, 'createProduct']);
+    Route::put('/products/{product}', [AdminController::class, 'updateProduct']);
+    Route::delete('/products/{product}', [AdminController::class, 'deleteProduct']);
+    Route::put('/products/bulk', [AdminController::class, 'bulkUpdateProducts']);
+
+    // Categorias Admin
+    Route::get('/categories', [AdminController::class, 'getCategories']);
+    Route::post('/categories', [AdminController::class, 'createCategory']);
+    Route::put('/categories/{category}', [AdminController::class, 'updateCategory']);
+    Route::delete('/categories/{category}', [AdminController::class, 'deleteCategory']);
+
+    // Banners Admin
+    Route::get('/banners', [AdminController::class, 'getBanners']);
+    Route::post('/banners', [AdminController::class, 'createBanner']);
+    Route::put('/banners/{banner}', [AdminController::class, 'updateBanner']);
+    Route::delete('/banners/{banner}', [AdminController::class, 'deleteBanner']);
+
+    // Páginas Admin
+    Route::get('/pages', [AdminController::class, 'getPages']);
+    Route::post('/pages', [AdminController::class, 'createPage']);
+    Route::put('/pages/{page}', [AdminController::class, 'updatePage']);
+    Route::delete('/pages/{page}', [AdminController::class, 'deletePage']);
+
+    // Configurações Admin
+    Route::get('/settings', [AdminController::class, 'getSettings']);
+    Route::put('/settings', [AdminController::class, 'updateSettings']);
+
+    // Pedidos Admin
+    Route::get('/orders', [AdminController::class, 'getOrders']);
+    Route::get('/orders/{order}', [AdminController::class, 'getOrder']);
+    Route::put('/orders/{order}', [AdminController::class, 'updateOrder']);
+    Route::delete('/orders/{order}', [AdminController::class, 'deleteOrder']);
+
+    // Métricas Admin
+    Route::get('/metrics', [AdminController::class, 'getMetrics']);
+    Route::get('/metrics/export', [AdminController::class, 'exportMetrics']);
+
+    // Usuários Admin
+    Route::get('/users', [AdminController::class, 'getUsers']);
+    Route::post('/users', [AdminController::class, 'createUser']);
+    Route::put('/users/{user}', [AdminController::class, 'updateUser']);
+    Route::delete('/users/{user}', [AdminController::class, 'deleteUser']);
+    Route::put('/users/{user}/toggle-status', [AdminController::class, 'toggleUserStatus']);
 });

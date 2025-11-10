@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Str;
 
 class Product extends Model
 {
@@ -36,6 +37,7 @@ class Product extends Model
         'meta_description',
         'meta_keywords',
         'seo_url',
+        'status',
     ];
 
     protected $casts = [
@@ -47,6 +49,37 @@ class Product extends Model
         'images' => 'array',
         'customization_options' => 'array',
     ];
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($product) {
+            if (empty($product->slug)) {
+                $product->slug = static::generateUniqueSlug($product->name);
+            }
+        });
+
+        static::updating(function ($product) {
+            if ($product->isDirty('name') && empty($product->slug)) {
+                $product->slug = static::generateUniqueSlug($product->name);
+            }
+        });
+    }
+
+    protected static function generateUniqueSlug($name)
+    {
+        $slug = Str::slug($name);
+        $count = 1;
+        $originalSlug = $slug;
+
+        while (static::where('slug', $slug)->exists()) {
+            $slug = $originalSlug . '-' . $count;
+            $count++;
+        }
+
+        return $slug;
+    }
 
     protected $appends = ['discount_percentage', 'is_in_stock', 'average_rating'];
 

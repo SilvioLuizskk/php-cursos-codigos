@@ -364,6 +364,7 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import { useNotification } from "@/composables/useNotification";
+import { adminService } from "@/services/adminService";
 
 const { showNotification } = useNotification();
 
@@ -457,28 +458,50 @@ const metrics = ref({
 const loadMetrics = async () => {
     loading.value = true;
     try {
-        // Simulação - substitua pelas chamadas reais da API
-        // const response = await api.get(`/metrics?period=${selectedPeriod.value}`)
-        // metrics.value = response.data
+        // Calcular datas baseado no período selecionado
+        const now = new Date();
+        let startDate, endDate;
 
-        // Simular dados diferentes baseados no período
-        const periodMultipliers = {
-            today: 0.1,
-            week: 0.5,
-            month: 1,
-            year: 12,
+        switch (selectedPeriod.value) {
+            case "today":
+                startDate = new Date(
+                    now.getFullYear(),
+                    now.getMonth(),
+                    now.getDate(),
+                );
+                endDate = now;
+                break;
+            case "week":
+                startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                endDate = now;
+                break;
+            case "month":
+                startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                endDate = now;
+                break;
+            case "year":
+                startDate = new Date(now.getFullYear(), 0, 1);
+                endDate = now;
+                break;
+            default:
+                startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+                endDate = now;
+        }
+
+        const params = {
+            start_date: startDate.toISOString().split("T")[0],
+            end_date: endDate.toISOString().split("T")[0],
         };
 
-        const multiplier = periodMultipliers[selectedPeriod.value];
-        metrics.value.totalSales = Math.round(15420.5 * multiplier);
-        metrics.value.totalOrders = Math.round(127 * multiplier);
-        metrics.value.totalVisitors = Math.round(2847 * multiplier);
+        const response = await adminService.getMetrics(params);
+        metrics.value = response.data;
 
         console.log(
             `Métricas carregadas para o período: ${selectedPeriod.value}`,
         );
     } catch (error) {
         console.error("Erro ao carregar métricas:", error);
+        showNotification("Erro ao carregar métricas", "error");
     } finally {
         loading.value = false;
     }
@@ -506,37 +529,29 @@ const getStatusClass = (status) => {
     return classes[status] || "bg-gray-100 text-gray-800";
 };
 
-const exportReport = () => {
+const exportReport = async () => {
     try {
-        // Criar dados do relatório
-        const reportData = {
-            periodo: selectedPeriod.value,
-            dataGeracao: new Date().toLocaleString("pt-BR"),
-            metricas: {
-                vendasTotais: metrics.value.totalSales,
-                totalPedidos: metrics.value.totalOrders,
-                visitantes: metrics.value.totalVisitors,
-                conversao: metrics.value.conversionRate,
-                abandonoCarrinho: metrics.value.cartAbandonment,
-                tempoSessao: metrics.value.avgSessionTime,
-                rejeicao: metrics.value.bounceRate,
-            },
-            produtosMaisVendidos: metrics.value.topProducts,
-            pedidosRecentes: metrics.value.recentOrders,
+        const params = {
+            start_date: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+                .toISOString()
+                .split("T")[0],
+            end_date: new Date().toISOString().split("T")[0],
+            type: "general",
         };
 
-        // Converter para JSON e fazer download
-        const dataStr = JSON.stringify(reportData, null, 2);
-        const dataUri =
-            "data:application/json;charset=utf-8," +
-            encodeURIComponent(dataStr);
+        const response = await adminService.exportReport(params);
 
-        const exportFileDefaultName = `relatorio-metricas-${selectedPeriod.value}-${new Date().toISOString().split("T")[0]}.json`;
-
-        const linkElement = document.createElement("a");
-        linkElement.setAttribute("href", dataUri);
-        linkElement.setAttribute("download", exportFileDefaultName);
-        linkElement.click();
+        // Criar link para download
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute(
+            "download",
+            `relatorio-metricas-${selectedPeriod.value}-${new Date().toISOString().split("T")[0]}.csv`,
+        );
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
 
         showNotification("Relatório exportado com sucesso!", "success");
     } catch (error) {

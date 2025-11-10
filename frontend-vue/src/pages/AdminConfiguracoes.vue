@@ -28,7 +28,7 @@
                             >Nome da Loja</label
                         >
                         <input
-                            v-model="settings.storeName"
+                            v-model="settings.store_name"
                             type="text"
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         />
@@ -39,7 +39,7 @@
                             >Email de Contato</label
                         >
                         <input
-                            v-model="settings.contactEmail"
+                            v-model="settings.contact_email"
                             type="email"
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         />
@@ -99,7 +99,7 @@
                             >Valor mínimo para frete grátis</label
                         >
                         <input
-                            v-model.number="settings.freeShippingThreshold"
+                            v-model.number="settings.free_shipping_threshold"
                             type="number"
                             step="0.01"
                             min="0"
@@ -115,7 +115,7 @@
                             >Prazo padrão de entrega (dias)</label
                         >
                         <input
-                            v-model.number="settings.defaultDeliveryDays"
+                            v-model.number="settings.default_delivery_days"
                             type="number"
                             min="1"
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -125,7 +125,7 @@
 
                 <div class="flex items-center">
                     <input
-                        v-model="settings.enablePickup"
+                        v-model="settings.enable_pickup"
                         type="checkbox"
                         class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                     />
@@ -145,7 +145,7 @@
                 <div class="space-y-3">
                     <div class="flex items-center">
                         <input
-                            v-model="settings.paymentMethods.pix"
+                            v-model="settings.enable_pix"
                             type="checkbox"
                             class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                         />
@@ -156,7 +156,7 @@
 
                     <div class="flex items-center">
                         <input
-                            v-model="settings.paymentMethods.creditCard"
+                            v-model="settings.enable_credit_card"
                             type="checkbox"
                             class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                         />
@@ -167,18 +167,18 @@
 
                     <div class="flex items-center">
                         <input
-                            v-model="settings.paymentMethods.debitCard"
+                            v-model="settings.enable_boleto"
                             type="checkbox"
                             class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                         />
                         <label class="ml-2 block text-sm text-gray-900"
-                            >Cartão de Débito</label
+                            >Boleto</label
                         >
                     </div>
 
                     <div class="flex items-center">
                         <input
-                            v-model="settings.paymentMethods.bankTransfer"
+                            v-model="settings.payment_methods.bank_transfer"
                             type="checkbox"
                             class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                         />
@@ -189,7 +189,7 @@
 
                     <div class="flex items-center">
                         <input
-                            v-model="settings.paymentMethods.cash"
+                            v-model="settings.payment_methods.cash"
                             type="checkbox"
                             class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                         />
@@ -214,7 +214,7 @@
                             >Cor Primária</label
                         >
                         <input
-                            v-model="settings.theme.primaryColor"
+                            v-model="settings.theme.primary_color"
                             type="color"
                             class="w-full h-10 border border-gray-300 rounded-lg cursor-pointer"
                         />
@@ -225,7 +225,7 @@
                             >Cor Secundária</label
                         >
                         <input
-                            v-model="settings.theme.secondaryColor"
+                            v-model="settings.theme.secondary_color"
                             type="color"
                             class="w-full h-10 border border-gray-300 rounded-lg cursor-pointer"
                         />
@@ -234,7 +234,7 @@
 
                 <div>
                     <ImageUpload
-                        v-model="settings.theme.logoUrl"
+                        v-model="settings.theme.logo_url"
                         label="Logo da Loja"
                         preview-alt="Preview do logo"
                     />
@@ -255,13 +255,14 @@
                         >Meta Description</label
                     >
                     <textarea
-                        v-model="settings.seo.metaDescription"
+                        v-model="settings.seo.meta_description"
                         rows="3"
                         maxlength="160"
                         class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     ></textarea>
                     <p class="text-xs text-gray-500 mt-1">
-                        {{ settings.seo.metaDescription.length }}/160 caracteres
+                        {{ settings.seo.meta_description.length }}/160
+                        caracteres
                     </p>
                 </div>
 
@@ -299,6 +300,7 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import { useNotification } from "@/composables/useNotification";
+import { adminService } from "@/services/adminService";
 import ImageUpload from "@/components/ImageUpload.vue";
 
 const { showNotification } = useNotification();
@@ -306,47 +308,107 @@ const { showNotification } = useNotification();
 const saving = ref(false);
 
 const settings = ref({
-    storeName: "Chinelos Karibe",
-    contactEmail: "contato@chineloskaribe.com",
+    store_name: "Chinelos Karibe",
+    contact_email: "contato@chineloskaribe.com",
     phone: "(11) 99999-9999",
+    currency: "BRL",
+    free_shipping_threshold: 150.0,
+    default_shipping_rate: 15.0,
+    enable_credit_card: true,
+    enable_pix: true,
+    enable_boleto: false,
+    smtp_host: "",
+    smtp_port: 587,
+    smtp_username: "",
+    smtp_password: "",
+    max_login_attempts: 5,
+    lockout_duration: 15,
     whatsapp: "(11) 99999-9999",
     address: "Rua dos Chinelos, 123 - São Paulo, SP",
-
-    freeShippingThreshold: 150.0,
-    defaultDeliveryDays: 7,
-    enablePickup: true,
-
-    paymentMethods: {
+    default_delivery_days: 7,
+    enable_pickup: true,
+    payment_methods: {
         pix: true,
-        creditCard: true,
-        debitCard: true,
-        bankTransfer: false,
+        credit_card: true,
+        debit_card: true,
+        bank_transfer: false,
         cash: true,
     },
-
     theme: {
-        primaryColor: "#3B82F6",
-        secondaryColor: "#10B981",
-        logoUrl: "https://via.placeholder.com/200x80?text=Chinelos+Karibe",
+        primary_color: "#3B82F6",
+        secondary_color: "#10B981",
+        logo_url: "https://via.placeholder.com/200x80?text=Chinelos+Karibe",
     },
-
     seo: {
-        metaDescription:
+        meta_description:
             "Chinelos Karibe - Conforto e estilo para seus pés. Grandes ofertas em chinelos de qualidade com entrega rápida.",
     },
-
     social: {
         facebook: "https://facebook.com/chineloskaribe",
         instagram: "https://instagram.com/chineloskaribe",
     },
 });
 
-// Simulação de carregamento das configurações
 const loadSettings = async () => {
     try {
-        // Simulação - substitua pela chamada real da API
-        // const response = await api.get('/settings')
-        // settings.value = response.data
+        const response = await adminService.getSettings();
+        const data = response.data || {};
+
+        // Mapear campos do backend para os campos da interface
+        settings.value = {
+            ...settings.value,
+            ...data,
+            // Mapear campos específicos se necessário
+            store_name: data.store_name || settings.value.store_name,
+            contact_email: data.contact_email || settings.value.contact_email,
+            phone: data.phone || settings.value.phone,
+            currency: data.currency || settings.value.currency,
+            free_shipping_threshold:
+                data.free_shipping_threshold ||
+                settings.value.free_shipping_threshold,
+            default_shipping_rate:
+                data.default_shipping_rate ||
+                settings.value.default_shipping_rate,
+            enable_credit_card:
+                data.enable_credit_card ??
+                settings.value.enable_credit_card,
+            enable_pix: data.enable_pix ?? settings.value.enable_pix,
+            enable_boleto:
+                data.enable_boleto ?? settings.value.enable_boleto,
+            // Mapear campos aninhados
+            theme: {
+                ...settings.value.theme,
+                logo_url: data.logo_url || settings.value.theme.logo_url,
+                primary_color:
+                    data.primary_color ||
+                    settings.value.theme.primary_color,
+                secondary_color:
+                    data.secondary_color ||
+                    settings.value.theme.secondary_color,
+            },
+            seo: {
+                ...settings.value.seo,
+                meta_description:
+                    data.meta_description ||
+                    settings.value.seo.meta_description,
+            },
+            social: {
+                ...settings.value.social,
+                facebook: data.facebook_url || settings.value.social.facebook,
+                instagram: data.instagram_url || settings.value.social.instagram,
+            },
+            whatsapp: data.whatsapp || settings.value.whatsapp,
+            address: data.address || settings.value.address,
+            default_delivery_days:
+                data.default_delivery_days ||
+                settings.value.default_delivery_days,
+            enable_pickup:
+                data.enable_pickup ?? settings.value.enable_pickup,
+            payment_methods: {
+                ...settings.value.payment_methods,
+                ...(data.payment_methods || {}),
+            },
+        };
         console.log("Configurações carregadas:", settings.value);
     } catch (error) {
         console.error("Erro ao carregar configurações:", error);
@@ -357,12 +419,47 @@ const loadSettings = async () => {
 const saveSettings = async () => {
     saving.value = true;
     try {
-        // Simulação - substitua pela chamada real da API
-        // await api.put('/settings', settings.value)
+        // Preparar dados para enviar ao backend
+        const dataToSend = {
+            store_name: settings.value.store_name,
+            contact_email: settings.value.contact_email,
+            phone: settings.value.phone,
+            currency: settings.value.currency,
+            free_shipping_threshold: settings.value.free_shipping_threshold,
+            default_shipping_rate: settings.value.default_shipping_rate,
+            enable_credit_card: settings.value.enable_credit_card,
+            enable_pix: settings.value.enable_pix,
+            enable_boleto: settings.value.enable_boleto,
+            smtp_host: settings.value.smtp_host,
+            smtp_port: settings.value.smtp_port,
+            smtp_username: settings.value.smtp_username,
+            smtp_password: settings.value.smtp_password,
+            max_login_attempts: settings.value.max_login_attempts,
+            lockout_duration: settings.value.lockout_duration,
+            // Campos de imagem e tema
+            logo_url: settings.value.theme?.logoUrl || "",
+            primary_color: settings.value.theme?.primaryColor || "#3B82F6",
+            secondary_color: settings.value.theme?.secondaryColor || "#10B981",
+            // Campos de SEO
+            meta_description: settings.value.seo?.metaDescription || "",
+            // Campos sociais
+            facebook_url: settings.value.social?.facebook || "",
+            instagram_url: settings.value.social?.instagram || "",
+            // Outros campos
+            whatsapp: settings.value.whatsapp || "",
+            address: settings.value.address || "",
+            default_delivery_days: settings.value.default_delivery_days || 7,
+            enable_pickup: settings.value.enable_pickup || false,
+            payment_methods: settings.value.payment_methods || {
+                pix: true,
+                credit_card: true,
+                debit_card: true,
+                bank_transfer: false,
+                cash: true,
+            },
+        };
 
-        // Simular delay de salvamento
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-
+        await adminService.updateSettings(dataToSend);
         showNotification("Configurações salvas com sucesso!", "success");
     } catch (error) {
         console.error("Erro ao salvar configurações:", error);

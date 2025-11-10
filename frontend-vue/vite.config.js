@@ -15,6 +15,14 @@ export default defineConfig({
         hmr: {
             overlay: false,
         },
+        proxy: {
+            "/storage": {
+                target: "http://localhost:8100",
+                changeOrigin: true,
+                secure: false,
+            },
+        },
+        middlewareMode: false,
     },
     build: {
         outDir: "dist",

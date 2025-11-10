@@ -43,6 +43,7 @@
                                 </p>
                                 <button
                                     class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
+                                    @click="saveHomePage"
                                 >
                                     {{ homeData.hero.buttonText }}
                                 </button>
@@ -79,6 +80,26 @@
                                 <h4 class="font-semibold">
                                     {{ category.name }}
                                 </h4>
+                                <div class="flex justify-center gap-2 mt-2">
+                                    <button
+                                        class="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 transition"
+                                        @click="saveCategory(category)"
+                                    >
+                                        Salvar
+                                    </button>
+                                    <button
+                                        class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+                                        @click="editCategory(category)"
+                                    >
+                                        Editar
+                                    </button>
+                                    <button
+                                        class="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition"
+                                        @click="deleteCategory(category)"
+                                    >
+                                        Excluir
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -99,6 +120,7 @@
                             </p>
                             <button
                                 class="bg-white text-blue-600 px-6 py-2 rounded-lg hover:bg-gray-100"
+                                @click="saveBanner"
                             >
                                 {{ homeData.promotionalBanner.buttonText }}
                             </button>
@@ -128,6 +150,26 @@
                                 <p class="text-blue-600 font-bold">
                                     R$ {{ formatCurrency(product.price) }}
                                 </p>
+                                <div class="flex justify-center gap-2 mt-2">
+                                    <button
+                                        class="px-3 py-1 bg-yellow-600 text-white rounded hover:bg-yellow-700 transition"
+                                        @click="saveProduct(product)"
+                                    >
+                                        Salvar
+                                    </button>
+                                    <button
+                                        class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+                                        @click="editProduct(product)"
+                                    >
+                                        Editar
+                                    </button>
+                                    <button
+                                        class="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition"
+                                        @click="deleteProduct(product)"
+                                    >
+                                        Excluir
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -362,6 +404,7 @@
 import { ref, onMounted } from "vue";
 import { useNotification } from "@/composables/useNotification";
 import ImageUpload from "@/components/ImageUpload.vue";
+import { apiClient } from "@/services/api";
 
 const { showNotification } = useNotification();
 
@@ -465,6 +508,81 @@ const saveHomePage = async () => {
         );
     } finally {
         saving.value = false;
+    }
+};
+
+// Salvar apenas o banner promocional
+const saveBanner = async () => {
+    try {
+        await apiClient.put(
+            "/home-config/banner",
+            homeData.value.promotionalBanner,
+        );
+        showNotification("Banner salvo com sucesso!", "success");
+    } catch (error) {
+        showNotification("Erro ao salvar banner", "error");
+    }
+};
+
+// Salvar apenas uma categoria
+const saveCategory = async (category) => {
+    try {
+        await apiClient.put(`/home-config/category/${category.id}`, category);
+        showNotification(`Categoria '${category.name}' salva!`, "success");
+    } catch (error) {
+        showNotification("Erro ao salvar categoria", "error");
+    }
+};
+
+// Salvar apenas um produto
+const saveProduct = async (product) => {
+    try {
+        await apiClient.put(`/home-config/product/${product.id}`, product);
+        showNotification(`Produto '${product.name}' salvo!`, "success");
+    } catch (error) {
+        showNotification("Erro ao salvar produto", "error");
+    }
+};
+
+// Editar categoria (exemplo: abrir modal, aqui só mostra notificação)
+const editCategory = (category) => {
+    showNotification(`Editar categoria: ${category.name}`, "info");
+    // Aqui você pode abrir um modal de edição real
+};
+
+// Excluir categoria
+const deleteCategory = async (category) => {
+    try {
+        await apiClient.delete(`/home-config/category/${category.id}`);
+        // Remove do array local
+        homeData.value.featuredCategories =
+            homeData.value.featuredCategories.filter(
+                (c) => c.id !== category.id,
+            );
+        showNotification(`Categoria '${category.name}' excluída!`, "success");
+    } catch (error) {
+        showNotification("Erro ao excluir categoria", "error");
+    }
+};
+
+// Editar produto (exemplo: abrir modal, aqui só mostra notificação)
+const editProduct = (product) => {
+    showNotification(`Editar produto: ${product.name}`, "info");
+    // Aqui você pode abrir um modal de edição real
+};
+
+// Excluir produto
+const deleteProduct = async (product) => {
+    try {
+        await apiClient.delete(`/home-config/product/${product.id}`);
+        // Remove do array local
+        homeData.value.featuredProducts.items =
+            homeData.value.featuredProducts.items.filter(
+                (p) => p.id !== product.id,
+            );
+        showNotification(`Produto '${product.name}' excluído!`, "success");
+    } catch (error) {
+        showNotification("Erro ao excluir produto", "error");
     }
 };
 

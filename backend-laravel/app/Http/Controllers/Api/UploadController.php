@@ -43,8 +43,8 @@ class UploadController extends Controller
             // Salvar imagem
             $path = $file->storeAs($folder . '/' . date('Y/m/d'), $filename, 'public');
 
-            // URL completa da imagem
-            $url = asset('storage/' . $path);
+            // URL da imagem - usar caminho relativo para funcionar com proxy do Vite
+            $url = '/storage/' . $path;
 
             return response()->json([
                 'data' => [
