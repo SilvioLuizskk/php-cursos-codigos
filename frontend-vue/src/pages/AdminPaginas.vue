@@ -8,6 +8,7 @@
                 @click="
                     showModal = true;
                     editingPage = null;
+                    formErrors = {};
                     form = {
                         title: '',
                         slug: '',
@@ -149,6 +150,12 @@
                                 required
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             />
+                            <p
+                                v-if="formErrors.title"
+                                class="text-sm text-red-600 mt-1"
+                            >
+                                {{ formErrors.title[0] }}
+                            </p>
                         </div>
 
                         <div>
@@ -163,6 +170,12 @@
                                 placeholder="sobre-nos"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             />
+                            <p
+                                v-if="formErrors.slug"
+                                class="text-sm text-red-600 mt-1"
+                            >
+                                {{ formErrors.slug[0] }}
+                            </p>
                             <p class="text-xs text-gray-500 mt-1">
                                 Será acessível em: /{{ form.slug }}
                             </p>
@@ -181,6 +194,12 @@
                             placeholder="Digite o conteúdo da página aqui..."
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         ></textarea>
+                        <p
+                            v-if="formErrors.content"
+                            class="text-sm text-red-600 mt-1"
+                        >
+                            {{ formErrors.content[0] }}
+                        </p>
                         <p class="text-xs text-gray-500 mt-1">
                             Suporte a HTML básico e quebras de linha
                         </p>
@@ -209,6 +228,12 @@
                                 min="1"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             />
+                            <p
+                                v-if="formErrors.order"
+                                class="text-sm text-red-600 mt-1"
+                            >
+                                {{ formErrors.order[0] }}
+                            </p>
                         </div>
                     </div>
 
@@ -231,11 +256,19 @@
                 </form>
             </div>
         </div>
+        <ConfirmModal
+            :visible="confirmVisible"
+            title="Excluir página"
+            message="Deseja realmente excluir esta página?"
+            @confirm="onConfirmDeletePage"
+            @cancel="onCancelDeletePage"
+        />
     </div>
 </template>
 
 <script setup>
 import { ref, onMounted, watch } from "vue";
+import ConfirmModal from "@/components/ConfirmModal.vue";
 import { useNotification } from "@/composables/useNotification";
 import pageService from "@/services/pageService";
 
@@ -244,6 +277,7 @@ const { showNotification } = useNotification();
 const pages = ref([]);
 const loading = ref(false);
 const saving = ref(false);
+const formErrors = ref({});
 const showModal = ref(false);
 const editingPage = ref(null);
 
@@ -337,13 +371,20 @@ const savePage = async () => {
             return;
         }
 
+        // Mapear `active` (checkbox) para `status` esperado pelo backend
+        const payload = { ...form.value };
+        if (payload.hasOwnProperty("active")) {
+            payload.status = payload.active ? "published" : "draft";
+            delete payload.active;
+        }
+
         if (editingPage.value) {
             console.log("Atualizando página existente:", editingPage.value.id);
-            await pageService.updatePage(editingPage.value.id, form.value);
+            await pageService.updatePage(editingPage.value.id, payload);
             showNotification("Página atualizada com sucesso!", "success");
         } else {
             console.log("Criando nova página");
-            await pageService.createPage(form.value);
+            await pageService.createPage(payload);
             showNotification("Página criada com sucesso!", "success");
         }
 
@@ -363,15 +404,19 @@ const savePage = async () => {
         editingPage.value = null;
     } catch (error) {
         console.error("Erro ao salvar página:", error);
+        formErrors.value = {};
 
         // Tentar extrair mensagem de erro da resposta da API
         let errorMessage = "Erro ao salvar página";
         if (error.response) {
             if (error.response.data && error.response.data.message) {
                 errorMessage = error.response.data.message;
-            } else if (error.response.data && error.response.data.errors) {
+            }
+
+            if (error.response.data && error.response.data.errors) {
                 // Se houver erros de validação específicos
-                const errors = Object.values(error.response.data.errors).flat();
+                formErrors.value = error.response.data.errors || {};
+                const errors = Object.values(formErrors.value).flat();
                 errorMessage = errors.join(", ");
             } else if (error.response.status === 422) {
                 errorMessage =
@@ -397,22 +442,30 @@ const editPage = (page) => {
 };
 
 const deletePage = async (id) => {
-    if (
-        !confirm(
-            "Tem certeza que deseja excluir esta página? Esta ação não pode ser desfeita.",
-        )
-    )
-        return;
+    confirmTargetId.value = id;
+    confirmVisible.value = true;
+};
 
+const confirmVisible = ref(false);
+const confirmTargetId = ref(null);
+
+const onConfirmDeletePage = async () => {
+    const id = confirmTargetId.value;
+    confirmVisible.value = false;
+    confirmTargetId.value = null;
     try {
         await pageService.deletePage(id);
         showNotification("Página excluída com sucesso!", "success");
-        // Recarregar páginas
         await loadPages();
     } catch (error) {
         console.error("Erro ao excluir página:", error);
         showNotification("Erro ao excluir página", "error");
     }
+};
+
+const onCancelDeletePage = () => {
+    confirmVisible.value = false;
+    confirmTargetId.value = null;
 };
 
 onMounted(() => {

@@ -1,4 +1,5 @@
 import { apiClient } from "@/services/api";
+import { resolveAssetUrl } from "@/services/api";
 
 export const adminService = {
     // Dashboard
@@ -15,7 +16,25 @@ export const adminService = {
     // Produtos Admin
     async getAdminProducts(params = {}) {
         const response = await apiClient.get("/admin/products", { params });
-        return response.data;
+        const data = response.data;
+
+        // Normalize images to absolute URLs if backend returns storage paths
+        const normalizeProduct = (p) => ({
+            ...p,
+            images: Array.isArray(p.images)
+                ? p.images.map((img) => resolveAssetUrl(img))
+                : p.images,
+        });
+
+        if (data && Array.isArray(data)) {
+            return data.map(normalizeProduct);
+        }
+
+        if (data && data.data && Array.isArray(data.data)) {
+            return { ...data, data: data.data.map(normalizeProduct) };
+        }
+
+        return data;
     },
 
     async createProduct(productData) {
@@ -74,7 +93,14 @@ export const adminService = {
     // Banners Admin
     async getBanners() {
         const response = await apiClient.get("/admin/banners");
-        return response.data;
+        // O backend pode retornar imagens como caminhos relativos (ex: /storage/...).
+        // Normalizar para URLs absolutas antes de devolver aos componentes.
+        const data = response.data;
+        if (Array.isArray(data)) {
+            return data.map((b) => ({ ...b, image: resolveAssetUrl(b.image) }));
+        }
+
+        return data;
     },
 
     async createBanner(bannerData) {

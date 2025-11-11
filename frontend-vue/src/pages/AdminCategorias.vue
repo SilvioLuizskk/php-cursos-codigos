@@ -8,11 +8,13 @@
                 @click="
                     showModal = true;
                     editingCategory = null;
+                    formErrors = {};
                     form = {
                         name: '',
                         description: '',
                         image: '',
                         order: categories.length + 1,
+                        active: true,
                     };
                 "
                 class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
@@ -131,6 +133,12 @@
                             required
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         />
+                        <p
+                            v-if="formErrors.name"
+                            class="text-sm text-red-600 mt-1"
+                        >
+                            {{ formErrors.name[0] }}
+                        </p>
                     </div>
 
                     <div>
@@ -143,6 +151,12 @@
                             rows="3"
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         ></textarea>
+                        <p
+                            v-if="formErrors.description"
+                            class="text-sm text-red-600 mt-1"
+                        >
+                            {{ formErrors.description[0] }}
+                        </p>
                     </div>
 
                     <div>
@@ -151,6 +165,12 @@
                             label="Imagem da Categoria"
                             preview-alt="Preview da categoria"
                         />
+                        <p
+                            v-if="formErrors.image"
+                            class="text-sm text-red-600 mt-1"
+                        >
+                            {{ formErrors.image[0] }}
+                        </p>
                     </div>
 
                     <div>
@@ -185,6 +205,15 @@
                 </form>
             </div>
         </div>
+
+        <!-- Confirm modal -->
+        <ConfirmModal
+            :visible="confirmVisible"
+            title="Excluir categoria"
+            message="Deseja realmente excluir esta categoria?"
+            @confirm="onConfirmDelete"
+            @cancel="onCancelDelete"
+        />
     </div>
 </template>
 
@@ -192,12 +221,16 @@
 import { ref, onMounted } from "vue";
 import { useNotification } from "@/composables/useNotification";
 import ImageUpload from "@/components/ImageUpload.vue";
+import ConfirmModal from "@/components/ConfirmModal.vue";
+import { adminService } from "@/services/adminService";
+import { resolveAssetUrl } from "@/services/api";
 
 const { showNotification } = useNotification();
 
 const categories = ref([]);
 const loading = ref(false);
 const saving = ref(false);
+const formErrors = ref({});
 const showModal = ref(false);
 const editingCategory = ref(null);
 
@@ -206,32 +239,22 @@ const form = ref({
     description: "",
     image: "",
     order: 1,
+    active: true,
 });
 
-// Simulação de API - substitua por chamadas reais quando o backend estiver pronto
 const fetchCategories = async () => {
     loading.value = true;
     try {
-        // Simulação - substitua pela chamada real da API
-        categories.value = [
-            {
-                id: 1,
-                name: "Chinelos Esportivos",
-                description: "Chinelos confortáveis para atividades físicas",
-                image: "https://via.placeholder.com/100x100?text=Esportivos",
-                order: 1,
-            },
-            {
-                id: 2,
-                name: "Chinelos Casuais",
-                description: "Chinelos para o dia a dia",
-                image: "https://via.placeholder.com/100x100?text=Casuais",
-                order: 2,
-            },
-        ];
+        const res = await adminService.getCategories();
+        const data = Array.isArray(res) ? res : (res?.data ?? []);
+        categories.value = data.map((c) => ({
+            ...c,
+            image: resolveAssetUrl(c.image),
+        }));
     } catch (error) {
         console.error("Erro ao carregar categorias:", error);
         showNotification("Erro ao carregar categorias", "error");
+        categories.value = [];
     } finally {
         loading.value = false;
     }
@@ -239,26 +262,27 @@ const fetchCategories = async () => {
 
 const saveCategory = async () => {
     saving.value = true;
+    formErrors.value = {};
     try {
         if (editingCategory.value) {
-            // Atualizar categoria existente
-            const index = categories.value.findIndex(
+            const res = await adminService.updateCategory(
+                editingCategory.value.id,
+                form.value,
+            );
+            const updated = res?.data ?? res;
+            const idx = categories.value.findIndex(
                 (c) => c.id === editingCategory.value.id,
             );
-            if (index !== -1) {
-                categories.value[index] = {
-                    ...editingCategory.value,
-                    ...form.value,
+            if (idx !== -1)
+                categories.value[idx] = {
+                    ...categories.value[idx],
+                    ...updated,
                 };
-            }
             showNotification("Categoria atualizada com sucesso!", "success");
         } else {
-            // Criar nova categoria
-            const newCategory = {
-                id: Date.now(), // Simulação de ID
-                ...form.value,
-            };
-            categories.value.push(newCategory);
+            const res = await adminService.createCategory(form.value);
+            const created = res?.data ?? res;
+            categories.value.push(created);
             showNotification("Categoria criada com sucesso!", "success");
         }
 
@@ -268,10 +292,18 @@ const saveCategory = async () => {
             description: "",
             image: "",
             order: categories.value.length + 1,
+            active: true,
         };
+        formErrors.value = {};
     } catch (error) {
         console.error("Erro ao salvar categoria:", error);
-        showNotification("Erro ao salvar categoria", "error");
+        if (error?.response && error.response.status === 422) {
+            formErrors.value = error.response.data.errors || {};
+            const messages = Object.values(formErrors.value).flat().join(", ");
+            showNotification(messages || "Dados inválidos", "error");
+        } else {
+            showNotification("Erro ao salvar categoria", "error");
+        }
     } finally {
         saving.value = false;
     }
@@ -284,10 +316,20 @@ const editCategory = (category) => {
 };
 
 const deleteCategory = async (id) => {
-    if (!confirm("Tem certeza que deseja excluir esta categoria?")) return;
+    // Abrir modal de confirmação
+    confirmTargetId.value = id;
+    confirmVisible.value = true;
+};
 
+const confirmVisible = ref(false);
+const confirmTargetId = ref(null);
+
+const onConfirmDelete = async () => {
+    const id = confirmTargetId.value;
+    confirmVisible.value = false;
+    confirmTargetId.value = null;
     try {
-        // Simulação - substitua pela chamada real da API
+        await adminService.deleteCategory(id);
         categories.value = categories.value.filter((c) => c.id !== id);
         showNotification("Categoria excluída com sucesso!", "success");
     } catch (error) {
@@ -296,9 +338,18 @@ const deleteCategory = async (id) => {
     }
 };
 
+const onCancelDelete = () => {
+    confirmVisible.value = false;
+    confirmTargetId.value = null;
+};
+
 const updateOrder = async (category) => {
     try {
-        // Simulação - em produção, faça uma chamada para atualizar a ordem no backend
+        // Se o backend possuir endpoint para ordem, chame-o aqui. Caso contrário,
+        // atualizamos localmente e assumimos que o adminService.updateCategory cuidará.
+        await adminService.updateCategory(category.id, {
+            order: category.order,
+        });
         showNotification("Ordem atualizada!", "success");
     } catch (error) {
         console.error("Erro ao atualizar ordem:", error);

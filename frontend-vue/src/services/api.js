@@ -7,6 +7,22 @@ import axios from "axios";
 const API_BASE_URL =
     import.meta.env.VITE_API_URL || "http://127.0.0.1:8100/api";
 
+// Origem da API (sem o sufixo /api) — útil para montar URLs de assets retornadas pelo backend
+export const API_ORIGIN = API_BASE_URL.replace(/\/api\/?$/, "");
+
+/**
+ * Resolve um caminho de asset retornado pelo backend para uma URL completa.
+ * - Se já for uma URL absoluta (http/https) retorna como está.
+ * - Se for um caminho relativo (ex: /storage/...) prefixa com a origem da API.
+ */
+export function resolveAssetUrl(path) {
+    if (!path) return path;
+    if (typeof path !== "string") return path;
+    if (path.startsWith("http://") || path.startsWith("https://")) return path;
+    // Garantir que exista uma / entre a origem e o caminho
+    return API_ORIGIN + (path.startsWith("/") ? path : `/${path}`);
+}
+
 // Configurar cliente axios
 export const apiClient = axios.create({
     baseURL: API_BASE_URL,
