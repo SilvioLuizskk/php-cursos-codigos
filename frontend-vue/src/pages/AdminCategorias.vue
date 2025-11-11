@@ -8,6 +8,7 @@
                 @click="
                     showModal = true;
                     editingCategory = null;
+                    formErrors = {};
                     form = {
                         name: '',
                         description: '',
@@ -132,6 +133,12 @@
                             required
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         />
+                        <p
+                            v-if="formErrors.name"
+                            class="text-sm text-red-600 mt-1"
+                        >
+                            {{ formErrors.name[0] }}
+                        </p>
                     </div>
 
                     <div>
@@ -144,6 +151,12 @@
                             rows="3"
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         ></textarea>
+                        <p
+                            v-if="formErrors.description"
+                            class="text-sm text-red-600 mt-1"
+                        >
+                            {{ formErrors.description[0] }}
+                        </p>
                     </div>
 
                     <div>
@@ -152,6 +165,12 @@
                             label="Imagem da Categoria"
                             preview-alt="Preview da categoria"
                         />
+                        <p
+                            v-if="formErrors.image"
+                            class="text-sm text-red-600 mt-1"
+                        >
+                            {{ formErrors.image[0] }}
+                        </p>
                     </div>
 
                     <div>
@@ -201,6 +220,7 @@ const { showNotification } = useNotification();
 const categories = ref([]);
 const loading = ref(false);
 const saving = ref(false);
+const formErrors = ref({});
 const showModal = ref(false);
 const editingCategory = ref(null);
 
@@ -232,6 +252,7 @@ const fetchCategories = async () => {
 
 const saveCategory = async () => {
     saving.value = true;
+    formErrors.value = {};
     try {
         if (editingCategory.value) {
             const res = await adminService.updateCategory(
@@ -261,10 +282,18 @@ const saveCategory = async () => {
             description: "",
             image: "",
             order: categories.value.length + 1,
+            active: true,
         };
+        formErrors.value = {};
     } catch (error) {
         console.error("Erro ao salvar categoria:", error);
-        showNotification("Erro ao salvar categoria", "error");
+        if (error?.response && error.response.status === 422) {
+            formErrors.value = error.response.data.errors || {};
+            const messages = Object.values(formErrors.value).flat().join(', ');
+            showNotification(messages || 'Dados inválidos', 'error');
+        } else {
+            showNotification("Erro ao salvar categoria", "error");
+        }
     } finally {
         saving.value = false;
     }

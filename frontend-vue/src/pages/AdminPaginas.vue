@@ -6,16 +6,17 @@
             </h1>
             <button
                 @click="
-                    showModal = true;
-                    editingPage = null;
-                    form = {
-                        title: '',
-                        slug: '',
-                        content: '',
-                        active: true,
-                        order: pages.length + 1,
-                    };
-                "
+                        showModal = true;
+                        editingPage = null;
+                        formErrors = {};
+                        form = {
+                            title: '',
+                            slug: '',
+                            content: '',
+                            active: true,
+                            order: pages.length + 1,
+                        };
+                    "
                 class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
             >
                 + Nova Página
@@ -144,11 +145,12 @@
                                 >Título da Página</label
                             >
                             <input
-                                v-model="form.title"
-                                type="text"
-                                required
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            />
+                                    v-model="form.title"
+                                    type="text"
+                                    required
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                />
+                            <p v-if="formErrors.title" class="text-sm text-red-600 mt-1">{{ formErrors.title[0] }}</p>
                         </div>
 
                         <div>
@@ -163,6 +165,7 @@
                                 placeholder="sobre-nos"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             />
+                            <p v-if="formErrors.slug" class="text-sm text-red-600 mt-1">{{ formErrors.slug[0] }}</p>
                             <p class="text-xs text-gray-500 mt-1">
                                 Será acessível em: /{{ form.slug }}
                             </p>
@@ -181,6 +184,7 @@
                             placeholder="Digite o conteúdo da página aqui..."
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         ></textarea>
+                        <p v-if="formErrors.content" class="text-sm text-red-600 mt-1">{{ formErrors.content[0] }}</p>
                         <p class="text-xs text-gray-500 mt-1">
                             Suporte a HTML básico e quebras de linha
                         </p>
@@ -209,6 +213,7 @@
                                 min="1"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             />
+                            <p v-if="formErrors.order" class="text-sm text-red-600 mt-1">{{ formErrors.order[0] }}</p>
                         </div>
                     </div>
 
@@ -244,6 +249,7 @@ const { showNotification } = useNotification();
 const pages = ref([]);
 const loading = ref(false);
 const saving = ref(false);
+const formErrors = ref({});
 const showModal = ref(false);
 const editingPage = ref(null);
 
@@ -363,15 +369,19 @@ const savePage = async () => {
         editingPage.value = null;
     } catch (error) {
         console.error("Erro ao salvar página:", error);
+        formErrors.value = {};
 
         // Tentar extrair mensagem de erro da resposta da API
         let errorMessage = "Erro ao salvar página";
         if (error.response) {
             if (error.response.data && error.response.data.message) {
                 errorMessage = error.response.data.message;
-            } else if (error.response.data && error.response.data.errors) {
+            }
+
+            if (error.response.data && error.response.data.errors) {
                 // Se houver erros de validação específicos
-                const errors = Object.values(error.response.data.errors).flat();
+                formErrors.value = error.response.data.errors || {};
+                const errors = Object.values(formErrors.value).flat();
                 errorMessage = errors.join(", ");
             } else if (error.response.status === 422) {
                 errorMessage =

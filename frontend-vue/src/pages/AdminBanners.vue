@@ -8,6 +8,7 @@
                 @click="
                     showModal = true;
                     editingBanner = null;
+                    formErrors = {};
                     form = {
                         title: '',
                         image: '',
@@ -165,6 +166,7 @@
                         @click="
                             showModal = true;
                             editingBanner = null;
+                            formErrors = {};
                             form = {
                                 title: '',
                                 image: '',
@@ -257,6 +259,12 @@
                             required
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         />
+                        <p
+                            v-if="formErrors.title"
+                            class="text-sm text-red-600 mt-1"
+                        >
+                            {{ formErrors.title[0] }}
+                        </p>
                     </div>
 
                     <div>
@@ -265,6 +273,12 @@
                             label="Imagem do Banner"
                             preview-alt="Preview do banner"
                         />
+                        <p
+                            v-if="formErrors.image"
+                            class="text-sm text-red-600 mt-1"
+                        >
+                            {{ formErrors.image[0] }}
+                        </p>
                     </div>
 
                     <div>
@@ -278,6 +292,12 @@
                             placeholder="https://exemplo.com/pagina"
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         />
+                        <p
+                            v-if="formErrors.link"
+                            class="text-sm text-red-600 mt-1"
+                        >
+                            {{ formErrors.link[0] }}
+                        </p>
                     </div>
 
                     <div>
@@ -293,6 +313,12 @@
                             <option value="sidebar">Sidebar (Lateral)</option>
                             <option value="carousel">Carrossel</option>
                         </select>
+                        <p
+                            v-if="formErrors.position"
+                            class="text-sm text-red-600 mt-1"
+                        >
+                            {{ formErrors.position[0] }}
+                        </p>
                     </div>
 
                     <div class="flex items-center">
@@ -317,6 +343,12 @@
                             min="1"
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         />
+                        <p
+                            v-if="formErrors.order"
+                            class="text-sm text-red-600 mt-1"
+                        >
+                            {{ formErrors.order[0] }}
+                        </p>
                     </div>
 
                     <div class="flex justify-end space-x-3 pt-4">
@@ -352,6 +384,7 @@ const { showNotification } = useNotification();
 const banners = ref([]);
 const loading = ref(false);
 const saving = ref(false);
+const formErrors = ref({});
 const showModal = ref(false);
 const editingBanner = ref(null);
 
@@ -381,17 +414,16 @@ import { resolveAssetUrl } from "@/services/api";
 const fetchBanners = async () => {
     loading.value = true;
     try {
-        console.log("Carregando banners...");
-        const response = await adminService.getBanners();
+        const data = await adminService.getBanners();
 
-        // adminService pode retornar diretamente um array ou um objeto { data: [...] }
-        const data = response?.data ?? response ?? [];
+        // adminService já normaliza imagens; garantir que temos um array
+        const list = Array.isArray(data) ? data : (data?.data ?? []);
 
-        // Garantir array e normalizar URLs caso ainda haja caminhos relativos
-        banners.value = (Array.isArray(data) ? data : data?.data ?? [])
-            .map((b) => ({ ...b, image: resolveAssetUrl(b.image) }));
-
-        console.log("Banners carregados:", banners.value);
+        // Como garantia, normalize novamente quaisquer caminhos relativos
+        banners.value = list.map((b) => ({
+            ...b,
+            image: resolveAssetUrl(b.image),
+        }));
     } catch (error) {
         console.error("Erro ao carregar banners:", error);
         showNotification("Erro ao carregar banners", "error");
@@ -403,26 +435,27 @@ const fetchBanners = async () => {
 
 const saveBanner = async () => {
     saving.value = true;
+    formErrors.value = {};
     try {
         if (editingBanner.value) {
-            // Atualizar banner existente
-            const index = banners.value.findIndex(
+            // Atualizar no backend
+            const res = await adminService.updateBanner(
+                editingBanner.value.id,
+                form.value,
+            );
+            // Resposta pode ser o objeto atualizado ou { data: obj }
+            const updated = res?.data ?? res;
+            const idx = banners.value.findIndex(
                 (b) => b.id === editingBanner.value.id,
             );
-            if (index !== -1) {
-                banners.value[index] = {
-                    ...editingBanner.value,
-                    ...form.value,
-                };
-            }
+            if (idx !== -1)
+                banners.value[idx] = { ...banners.value[idx], ...updated };
             showNotification("Banner atualizado com sucesso!", "success");
         } else {
-            // Criar novo banner
-            const newBanner = {
-                id: Date.now(), // Simulação de ID
-                ...form.value,
-            };
-            banners.value.push(newBanner);
+            // Criar no backend
+            const res = await adminService.createBanner(form.value);
+            const created = res?.data ?? res;
+            banners.value.push(created);
             showNotification("Banner criado com sucesso!", "success");
         }
 
@@ -435,9 +468,16 @@ const saveBanner = async () => {
             active: true,
             order: banners.value.length + 1,
         };
+        formErrors.value = {};
     } catch (error) {
         console.error("Erro ao salvar banner:", error);
-        showNotification("Erro ao salvar banner", "error");
+        if (error?.response && error.response.status === 422) {
+            formErrors.value = error.response.data.errors || {};
+            const messages = Object.values(formErrors.value).flat().join(', ');
+            showNotification(messages || 'Dados inválidos', 'error');
+        } else {
+            showNotification("Erro ao salvar banner", "error");
+        }
     } finally {
         saving.value = false;
     }
@@ -453,7 +493,7 @@ const deleteBanner = async (id) => {
     if (!confirm("Tem certeza que deseja excluir este banner?")) return;
 
     try {
-        // Simulação - substitua pela chamada real da API
+        await adminService.deleteBanner(id);
         banners.value = banners.value.filter((b) => b.id !== id);
         showNotification("Banner excluído com sucesso!", "success");
     } catch (error) {
