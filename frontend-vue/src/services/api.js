@@ -7,6 +7,9 @@ import axios from "axios";
 const API_BASE_URL =
     import.meta.env.VITE_API_URL || "http://127.0.0.1:8100/api";
 
+// Debug: mostrar a baseURL usada pelo cliente API para evitar confusões de CORS/URL
+console.log("[api] API_BASE_URL:", API_BASE_URL);
+
 // Origem da API (sem o sufixo /api) — útil para montar URLs de assets retornadas pelo backend
 export const API_ORIGIN = API_BASE_URL.replace(/\/api\/?$/, "");
 
@@ -66,6 +69,13 @@ apiClient.interceptors.request.use(
             config.params = {
                 ...config.params,
                 _t: Date.now(),
+            };
+            // Adicionar headers para forçar refresh e evitar cache
+            config.headers = {
+                ...config.headers,
+                "Cache-Control": "no-cache, no-store, must-revalidate",
+                Pragma: "no-cache",
+                Expires: "0",
             };
         }
 

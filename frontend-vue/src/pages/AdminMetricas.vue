@@ -365,6 +365,7 @@
 import { ref, onMounted } from "vue";
 import { useNotification } from "@/composables/useNotification";
 import { adminService } from "@/services/adminService";
+import { apiClient } from "@/services/api";
 
 const { showNotification } = useNotification();
 
@@ -494,7 +495,10 @@ const loadMetrics = async () => {
         };
 
         const response = await adminService.getMetrics(params);
-        metrics.value = response.data;
+        // adminService.getMetrics retorna response.data — mas alguns serviços
+        // podem já devolver o objeto diretamente. Normalizar para `data`.
+        const data = response?.data ?? response ?? {};
+        metrics.value = data;
 
         console.log(
             `Métricas carregadas para o período: ${selectedPeriod.value}`,
@@ -539,10 +543,14 @@ const exportReport = async () => {
             type: "general",
         };
 
-        const response = await adminService.exportReport(params);
+        // Fazer a requisição diretamente para obter blob (download CSV)
+        const res = await apiClient.get("/admin/metrics/export", {
+            params,
+            responseType: "blob",
+        });
 
         // Criar link para download
-        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const url = window.URL.createObjectURL(new Blob([res.data]));
         const link = document.createElement("a");
         link.href = url;
         link.setAttribute(

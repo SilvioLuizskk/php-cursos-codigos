@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\HomeController;
 use App\Http\Controllers\Api\ABDashboardController;
 use App\Http\Controllers\Api\PageController;
 use App\Http\Controllers\Api\UploadController;
+use App\Http\Controllers\Api\ReviewController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -76,6 +77,10 @@ Route::group([], function () {
         Route::get('/search', [ProductController::class, 'search']);
         Route::get('/{product:slug}', [ProductController::class, 'show']);
 
+        // Reviews
+        Route::get('/{productId}/reviews', [ReviewController::class, 'index']);
+        Route::middleware('auth:sanctum')->post('/{productId}/reviews', [ReviewController::class, 'store']);
+
         // Rotas protegidas (admin) - TEMPORARIAMENTE SEM AUTENTICAÇÃO PARA TESTE
         Route::post('/', [ProductController::class, 'store']);
         Route::put('/{product}', [ProductController::class, 'update']);
@@ -109,6 +114,14 @@ Route::group([], function () {
         Route::get('/{order}/tracking', [OrderController::class, 'tracking']);
     });
 
+    // ==================== REVIEWS ====================
+    Route::middleware('auth:sanctum')->prefix('reviews')->group(function () {
+        Route::get('/{review}', [ReviewController::class, 'show']);
+        Route::put('/{review}', [ReviewController::class, 'update']);
+        Route::delete('/{review}', [ReviewController::class, 'destroy']);
+        Route::post('/{review}/helpful', [ReviewController::class, 'markHelpful']);
+    });
+
     // ==================== PÁGINAS ====================
     Route::prefix('pages')->group(function () {
         // Rotas públicas
@@ -131,6 +144,8 @@ Route::group([], function () {
     });
 
     // ==================== HOME CONFIG (ADMIN) ====================
+    // Configuração completa da home
+    Route::put('/home-config', [HomeController::class, 'updateHomeConfig']);
     // Banner
     Route::put('/home-config/banner', [HomeController::class, 'updateBanner']);
     Route::delete('/home-config/banner/{id}', [HomeController::class, 'deleteBanner']);

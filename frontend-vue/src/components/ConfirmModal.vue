@@ -35,8 +35,15 @@ const props = defineProps({
 
 const emits = defineEmits(["confirm", "cancel"]);
 
-const confirm = () => emits("confirm");
-const cancel = () => emits("cancel");
+const confirm = () => {
+    console.log("[ConfirmModal] confirm clicked");
+    emits("confirm");
+};
+
+const cancel = () => {
+    console.log("[ConfirmModal] cancel clicked");
+    emits("cancel");
+};
 </script>
 
 <style scoped></style>

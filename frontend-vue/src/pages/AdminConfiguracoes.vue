@@ -351,59 +351,56 @@ const settings = ref({
 
 const loadSettings = async () => {
     try {
-        const response = await adminService.getSettings();
-        const data = response.data || {};
+        // `adminService.getSettings()` já retorna `response.data` (objeto de configurações)
+        const data = await adminService.getSettings();
 
         // Mapear campos do backend para os campos da interface
         settings.value = {
             ...settings.value,
-            ...data,
+            ...(data || {}),
             // Mapear campos específicos se necessário
-            store_name: data.store_name || settings.value.store_name,
-            contact_email: data.contact_email || settings.value.contact_email,
-            phone: data.phone || settings.value.phone,
-            currency: data.currency || settings.value.currency,
+            store_name: data.store_name ?? settings.value.store_name,
+            contact_email: data.contact_email ?? settings.value.contact_email,
+            phone: data.phone ?? settings.value.phone,
+            currency: data.currency ?? settings.value.currency,
             free_shipping_threshold:
-                data.free_shipping_threshold ||
+                data.free_shipping_threshold ??
                 settings.value.free_shipping_threshold,
             default_shipping_rate:
-                data.default_shipping_rate ||
+                data.default_shipping_rate ??
                 settings.value.default_shipping_rate,
             enable_credit_card:
-                data.enable_credit_card ??
-                settings.value.enable_credit_card,
+                data.enable_credit_card ?? settings.value.enable_credit_card,
             enable_pix: data.enable_pix ?? settings.value.enable_pix,
-            enable_boleto:
-                data.enable_boleto ?? settings.value.enable_boleto,
+            enable_boleto: data.enable_boleto ?? settings.value.enable_boleto,
             // Mapear campos aninhados
             theme: {
                 ...settings.value.theme,
-                logo_url: data.logo_url || settings.value.theme.logo_url,
+                logo_url: data.logo_url ?? settings.value.theme.logo_url,
                 primary_color:
-                    data.primary_color ||
-                    settings.value.theme.primary_color,
+                    data.primary_color ?? settings.value.theme.primary_color,
                 secondary_color:
-                    data.secondary_color ||
+                    data.secondary_color ??
                     settings.value.theme.secondary_color,
             },
             seo: {
                 ...settings.value.seo,
                 meta_description:
-                    data.meta_description ||
+                    data.meta_description ??
                     settings.value.seo.meta_description,
             },
             social: {
                 ...settings.value.social,
-                facebook: data.facebook_url || settings.value.social.facebook,
-                instagram: data.instagram_url || settings.value.social.instagram,
+                facebook: data.facebook_url ?? settings.value.social.facebook,
+                instagram:
+                    data.instagram_url ?? settings.value.social.instagram,
             },
-            whatsapp: data.whatsapp || settings.value.whatsapp,
-            address: data.address || settings.value.address,
+            whatsapp: data.whatsapp ?? settings.value.whatsapp,
+            address: data.address ?? settings.value.address,
             default_delivery_days:
-                data.default_delivery_days ||
+                data.default_delivery_days ??
                 settings.value.default_delivery_days,
-            enable_pickup:
-                data.enable_pickup ?? settings.value.enable_pickup,
+            enable_pickup: data.enable_pickup ?? settings.value.enable_pickup,
             payment_methods: {
                 ...settings.value.payment_methods,
                 ...(data.payment_methods || {}),
@@ -419,51 +416,113 @@ const loadSettings = async () => {
 const saveSettings = async () => {
     saving.value = true;
     try {
-        // Preparar dados para enviar ao backend
-        const dataToSend = {
-            store_name: settings.value.store_name,
-            contact_email: settings.value.contact_email,
-            phone: settings.value.phone,
-            currency: settings.value.currency,
-            free_shipping_threshold: settings.value.free_shipping_threshold,
-            default_shipping_rate: settings.value.default_shipping_rate,
-            enable_credit_card: settings.value.enable_credit_card,
-            enable_pix: settings.value.enable_pix,
-            enable_boleto: settings.value.enable_boleto,
-            smtp_host: settings.value.smtp_host,
-            smtp_port: settings.value.smtp_port,
-            smtp_username: settings.value.smtp_username,
-            smtp_password: settings.value.smtp_password,
-            max_login_attempts: settings.value.max_login_attempts,
-            lockout_duration: settings.value.lockout_duration,
-            // Campos de imagem e tema
-            logo_url: settings.value.theme?.logoUrl || "",
-            primary_color: settings.value.theme?.primaryColor || "#3B82F6",
-            secondary_color: settings.value.theme?.secondaryColor || "#10B981",
-            // Campos de SEO
-            meta_description: settings.value.seo?.metaDescription || "",
-            // Campos sociais
-            facebook_url: settings.value.social?.facebook || "",
-            instagram_url: settings.value.social?.instagram || "",
-            // Outros campos
-            whatsapp: settings.value.whatsapp || "",
-            address: settings.value.address || "",
-            default_delivery_days: settings.value.default_delivery_days || 7,
-            enable_pickup: settings.value.enable_pickup || false,
-            payment_methods: settings.value.payment_methods || {
-                pix: true,
-                credit_card: true,
-                debit_card: true,
-                bank_transfer: false,
-                cash: true,
-            },
+        // Preparar dados para enviar ao backend (usar snake_case conforme API)
+        // Defensive casting to ensure backend receives proper types
+        const pm = settings.value.payment_methods || {};
+        const payment_methods = {
+            pix: !!pm.pix,
+            credit_card: !!pm.credit_card,
+            debit_card: !!pm.debit_card,
+            bank_transfer: !!pm.bank_transfer,
+            cash: !!pm.cash,
         };
 
-        await adminService.updateSettings(dataToSend);
+        const dataToSend = {
+            store_name: settings.value.store_name || null,
+            contact_email: settings.value.contact_email || null,
+            phone: settings.value.phone || null,
+            currency: settings.value.currency || null,
+            free_shipping_threshold:
+                settings.value.free_shipping_threshold !== undefined
+                    ? Number(settings.value.free_shipping_threshold)
+                    : null,
+            default_shipping_rate:
+                settings.value.default_shipping_rate !== undefined
+                    ? Number(settings.value.default_shipping_rate)
+                    : null,
+            enable_credit_card: !!settings.value.enable_credit_card,
+            enable_pix: !!settings.value.enable_pix,
+            enable_boleto: !!settings.value.enable_boleto,
+            smtp_host: settings.value.smtp_host || null,
+            smtp_port:
+                settings.value.smtp_port !== undefined &&
+                settings.value.smtp_port !== null
+                    ? Number(settings.value.smtp_port)
+                    : null,
+            smtp_username: settings.value.smtp_username || null,
+            smtp_password: settings.value.smtp_password || null,
+            max_login_attempts:
+                settings.value.max_login_attempts !== undefined
+                    ? Number(settings.value.max_login_attempts)
+                    : null,
+            lockout_duration:
+                settings.value.lockout_duration !== undefined
+                    ? Number(settings.value.lockout_duration)
+                    : null,
+            // Campos de imagem e tema (usar nomes esperados pelo backend)
+            logo_url:
+                settings.value.theme?.logo_url ||
+                settings.value.theme?.logoUrl ||
+                null,
+            primary_color:
+                settings.value.theme?.primary_color ||
+                settings.value.theme?.primaryColor ||
+                null,
+            secondary_color:
+                settings.value.theme?.secondary_color ||
+                settings.value.theme?.secondaryColor ||
+                null,
+            // Campos de SEO
+            meta_description:
+                settings.value.seo?.meta_description ||
+                settings.value.seo?.metaDescription ||
+                null,
+            // Campos sociais
+            facebook_url: settings.value.social?.facebook || null,
+            instagram_url: settings.value.social?.instagram || null,
+            // Outros campos
+            whatsapp: settings.value.whatsapp || null,
+            address: settings.value.address || null,
+            default_delivery_days:
+                settings.value.default_delivery_days !== undefined
+                    ? Number(settings.value.default_delivery_days)
+                    : null,
+            enable_pickup: !!settings.value.enable_pickup,
+            payment_methods,
+        };
+
+        // Debug: log do payload enviado
+        console.log("[AdminConfiguracoes] Enviando settings ->", dataToSend);
+
+        const res = await adminService.updateSettings(dataToSend);
+        console.log("[AdminConfiguracoes] Save response ->", res);
         showNotification("Configurações salvas com sucesso!", "success");
     } catch (error) {
+        // Log detalhado para ajudar no diagnóstico
         console.error("Erro ao salvar configurações:", error);
-        showNotification("Erro ao salvar configurações", "error");
+        if (error?.response) {
+            console.error(
+                "Resposta do servidor (error.response):",
+                error.response,
+            );
+            // Tentar extrair mensagem amigável enviada pelo backend
+            const serverMsg =
+                error.response.data?.message ||
+                error.response.data?.error ||
+                (error.response.data
+                    ? JSON.stringify(error.response.data)
+                    : null);
+
+            showNotification(
+                serverMsg || "Erro ao salvar configurações",
+                "error",
+            );
+        } else {
+            showNotification(
+                "Erro ao salvar configurações: sem resposta do servidor",
+                "error",
+            );
+        }
     } finally {
         saving.value = false;
     }

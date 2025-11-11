@@ -158,6 +158,9 @@ class AdminController extends Controller
             $product->update($validated);
 
             return response()->json($product);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::error('Erro de validação ao atualizar produto', $e->errors());
+            return response()->json(['error' => 'Dados inválidos', 'errors' => $e->errors()], 422);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Erro ao atualizar produto'], 500);
         }
@@ -204,6 +207,10 @@ class AdminController extends Controller
             DB::commit();
 
             return response()->json(['message' => 'Produtos atualizados com sucesso']);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            DB::rollback();
+            Log::error('Erro de validação no bulkUpdateProducts', $e->errors());
+            return response()->json(['error' => 'Dados inválidos', 'errors' => $e->errors()], 422);
         } catch (\Exception $e) {
             DB::rollback();
             return response()->json(['error' => 'Erro ao atualizar produtos em lote'], 500);
@@ -239,6 +246,9 @@ class AdminController extends Controller
             $category = Category::create($validated);
 
             return response()->json($category, 201);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::error('Erro de validação ao criar categoria', $e->errors());
+            return response()->json(['error' => 'Dados inválidos', 'errors' => $e->errors()], 422);
         } catch (\Illuminate\Database\QueryException $e) {
             Log::error('DB error ao criar categoria', ['message' => $e->getMessage()]);
             return response()->json(['error' => 'Erro ao criar categoria: conflito de integridade (slug/unique)'], 422);
@@ -261,6 +271,9 @@ class AdminController extends Controller
             $category->update($validated);
 
             return response()->json($category);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::error('Erro de validação ao atualizar categoria', $e->errors());
+            return response()->json(['error' => 'Dados inválidos', 'errors' => $e->errors()], 422);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Erro ao atualizar categoria'], 500);
         }
@@ -317,6 +330,9 @@ class AdminController extends Controller
             $banner = Banner::create($validated);
 
             return response()->json($banner, 201);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::error('Erro de validação ao criar banner', $e->errors());
+            return response()->json(['error' => 'Dados inválidos', 'errors' => $e->errors()], 422);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Erro ao criar banner'], 500);
         }
@@ -344,6 +360,9 @@ class AdminController extends Controller
             $banner->update($validated);
 
             return response()->json($banner);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::error('Erro de validação ao atualizar banner', $e->errors());
+            return response()->json(['error' => 'Dados inválidos', 'errors' => $e->errors()], 422);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Erro ao atualizar banner'], 500);
         }
@@ -386,6 +405,9 @@ class AdminController extends Controller
             $page = Page::create($validated);
 
             return response()->json($page, 201);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::error('Erro de validação ao criar página', $e->errors());
+            return response()->json(['error' => 'Dados inválidos', 'errors' => $e->errors()], 422);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Erro ao criar página'], 500);
         }
@@ -406,6 +428,9 @@ class AdminController extends Controller
             $page->update($validated);
 
             return response()->json($page);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::error('Erro de validação ao atualizar página', $e->errors());
+            return response()->json(['error' => 'Dados inválidos', 'errors' => $e->errors()], 422);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Erro ao atualizar página'], 500);
         }
@@ -445,6 +470,29 @@ class AdminController extends Controller
     public function updateSettings(Request $request)
     {
         try {
+            // Debug: log do payload recebido para diagnóstico (mascarar campos sensíveis)
+            try {
+                $payload = $request->all();
+                if (isset($payload['smtp_password'])) {
+                    $payload['smtp_password'] = '***';
+                }
+                Log::info('AdminController@updateSettings payload', $payload);
+                // Logar headers e raw body para ajudar a diagnosticar problemas de CORS/charset/encoding
+                try {
+                    $headers = $request->headers->all();
+                    Log::debug('AdminController@updateSettings headers', $headers);
+                    $raw = $request->getContent();
+                    if ($raw && is_string($raw) && strlen($raw) < 10000) {
+                        // Evitar logar bodies muito grandes
+                        Log::debug('AdminController@updateSettings raw_body', ['body' => $raw]);
+                    }
+                } catch (\Exception $e) {
+                    Log::warning('Falha ao logar headers/raw body: ' . $e->getMessage());
+                }
+            } catch (\Exception $e) {
+                Log::warning('Falha ao logar payload em updateSettings: ' . $e->getMessage());
+            }
+
             $validated = $request->validate([
                 'store_name' => 'nullable|string|max:255',
                 'contact_email' => 'nullable|email',
@@ -491,7 +539,28 @@ class AdminController extends Controller
                 }
             }
 
-            return response()->json(['message' => 'Configurações atualizadas com sucesso']);
+            Log::info('AdminController@updateSettings completed successfully');
+
+            // Preparar dados para broadcast/response (mascarar campos sensíveis)
+            $broadcastData = $validated;
+            if (isset($broadcastData['smtp_password'])) {
+                $broadcastData['smtp_password'] = '***';
+            }
+
+            // Disparar evento de broadcast (se configuração de broadcasting estiver ativa)
+            try {
+                event(new \App\Events\SettingsUpdated($broadcastData));
+            } catch (\Exception $e) {
+                Log::warning('Falha ao disparar evento SettingsUpdated: ' . $e->getMessage());
+            }
+
+            return response()->json([
+                'message' => 'Configurações atualizadas com sucesso',
+                'settings' => $broadcastData,
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::error('Erro de validação no updateSettings', $e->errors());
+            return response()->json(['error' => 'Dados inválidos', 'errors' => $e->errors()], 422);
         } catch (\Exception $e) {
             Log::error('Erro no updateSettings: ' . $e->getMessage());
             Log::error('Stack trace: ' . $e->getTraceAsString());
@@ -552,6 +621,9 @@ class AdminController extends Controller
             $order->update($validated);
 
             return response()->json($order);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::error('Erro de validação ao atualizar pedido', $e->errors());
+            return response()->json(['error' => 'Dados inválidos', 'errors' => $e->errors()], 422);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Erro ao atualizar pedido'], 500);
         }
@@ -692,6 +764,9 @@ class AdminController extends Controller
             ]);
 
             return response()->json($user, 201);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::error('Erro de validação ao criar usuário', $e->errors());
+            return response()->json(['error' => 'Dados inválidos', 'errors' => $e->errors()], 422);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Erro ao criar usuário'], 500);
         }
@@ -714,6 +789,9 @@ class AdminController extends Controller
             $user->update($validated);
 
             return response()->json($user);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::error('Erro de validação ao atualizar usuário', $e->errors());
+            return response()->json(['error' => 'Dados inválidos', 'errors' => $e->errors()], 422);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Erro ao atualizar usuário'], 500);
         }

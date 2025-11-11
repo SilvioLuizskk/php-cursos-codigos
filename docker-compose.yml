@@ -6,7 +6,7 @@ services:
         container_name: ecom_app
         working_dir: /var/www/html
         volumes:
-            - ./:/var/www/html:cached
+            - ./backend-laravel:/var/www/html:cached
             - ./backend-laravel/vendor:/var/www/html/vendor:cached
             - .env:/var/www/html/.env:cached
         command: bash -lc "php artisan config:cache && php artisan migrate --force || true; php artisan serve --host=0.0.0.0 --port=9000"

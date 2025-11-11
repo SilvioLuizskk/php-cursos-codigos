@@ -218,7 +218,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch } from "vue";
 import { useNotification } from "@/composables/useNotification";
 import ImageUpload from "@/components/ImageUpload.vue";
 import ConfirmModal from "@/components/ConfirmModal.vue";
@@ -263,6 +263,7 @@ const fetchCategories = async () => {
 const saveCategory = async () => {
     saving.value = true;
     formErrors.value = {};
+    console.log('[AdminCategorias] saving category ->', form.value);
     try {
         if (editingCategory.value) {
             const res = await adminService.updateCategory(
@@ -319,10 +320,15 @@ const deleteCategory = async (id) => {
     // Abrir modal de confirmação
     confirmTargetId.value = id;
     confirmVisible.value = true;
+    console.log('[AdminCategorias] delete requested ->', id);
 };
 
 const confirmVisible = ref(false);
 const confirmTargetId = ref(null);
+
+// Debug: log quando modais mudam de estado
+watch(showModal, (v) => console.log('[AdminCategorias] showModal ->', v));
+watch(confirmVisible, (v) => console.log('[AdminCategorias] confirmVisible ->', v));
 
 const onConfirmDelete = async () => {
     const id = confirmTargetId.value;

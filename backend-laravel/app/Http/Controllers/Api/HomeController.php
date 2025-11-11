@@ -19,6 +19,31 @@ class HomeController extends Controller
      */
     public function index(): JsonResponse
     {
+        // If there's a full home config file, prefer its values for hero, promotional banner and featured lists
+        if (Storage::disk('local')->exists('home_config.json')) {
+            $json = Storage::disk('local')->get('home_config.json');
+            $config = json_decode($json, true);
+            if (is_array($config)) {
+                // Ensure we still provide featured_products and categories from DB if not present in config
+                $featuredProducts = $config['featuredProducts']['items'] ?? null;
+                $categories = $config['featuredCategories'] ?? null;
+                $promotionalBanner = $config['promotionalBanner'] ?? null;
+
+                return response()->json([
+                    'featured_products' => $featuredProducts ?? Product::where('is_featured', true)->where('is_active', true)->where('stock_quantity', '>', 0)->with('category')->orderBy('created_at', 'desc')->limit(8)->get(),
+                    'categories' => $categories ?? Category::where('is_active', true)->orderBy('sort_order')->limit(6)->get(),
+                    'stats' => (auth('sanctum')->check() ? [
+                        'total_orders' => Order::where('user_id', auth('sanctum')->user()->id)->count(),
+                        'pending_orders' => Order::where('user_id', auth('sanctum')->user()->id)->where('status', 'pending')->count(),
+                        'cart_items' => Cart::where('user_id', auth('sanctum')->user()->id)->sum('quantity'),
+                    ] : null),
+                    'banners' => $config['banners'] ?? $this->getActiveBanners(),
+                    'hero' => $config['hero'] ?? null,
+                    'promotionalBanner' => $promotionalBanner ?? null,
+                    'featuredProductsConfig' => $config['featuredProducts'] ?? null,
+                ]);
+            }
+        }
         // Produtos em destaque
         $featuredProducts = Product::where('is_featured', true)
             ->where('is_active', true)
@@ -89,10 +114,35 @@ class HomeController extends Controller
     // --- CRUD BANNER ---
     public function updateBanner(Request $request): JsonResponse
     {
-        // Exemplo: salvar banners em arquivo JSON (pode ser substituído por model futuramente)
-        $banners = $request->input('banners', []);
-        Storage::disk('local')->put('home_banners.json', json_encode($banners));
-        return response()->json(['message' => 'Banners atualizados com sucesso', 'banners' => $banners]);
+        // Support two modes:
+        // - full banners array: { banners: [...] }
+        // - single promotional banner object (title, description, buttonText, active, etc.)
+        if ($request->has('banners')) {
+            $banners = $request->input('banners', []);
+            Storage::disk('local')->put('home_banners.json', json_encode($banners));
+            return response()->json(['message' => 'Banners atualizados com sucesso', 'banners' => $banners]);
+        }
+
+        // If payload looks like a single promotional banner, save it separately
+        $payload = $request->all();
+        $isPromotional = isset($payload['title']) || isset($payload['description']) || isset($payload['buttonText']);
+        if ($isPromotional) {
+            Storage::disk('local')->put('promotional_banner.json', json_encode($payload));
+            return response()->json(['message' => 'Banner promocional atualizado', 'promotionalBanner' => $payload]);
+        }
+
+        // Fallback: nothing to save
+        return response()->json(['message' => 'Nenhum dado recebido'], 400);
+    }
+
+    /**
+     * Atualiza a configuração completa da home (hero, promotionalBanner, featuredCategories, featuredProducts, banners)
+     */
+    public function updateHomeConfig(Request $request): JsonResponse
+    {
+        $payload = $request->all();
+        Storage::disk('local')->put('home_config.json', json_encode($payload));
+        return response()->json(['message' => 'Configuração da home salva com sucesso', 'config' => $payload]);
     }
 
     public function deleteBanner($id): JsonResponse

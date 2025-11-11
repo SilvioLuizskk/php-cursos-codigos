@@ -25,6 +25,38 @@
                         >
                             Início
                         </router-link>
+
+                        <!-- Categories Dropdown -->
+                        <div class="relative">
+                            <button
+                                @click="
+                                    categoriesDropdownOpen =
+                                        !categoriesDropdownOpen
+                                "
+                                class="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors flex items-center"
+                            >
+                                Categorias
+                                <i class="fas fa-chevron-down ml-1 text-xs"></i>
+                            </button>
+                            <div
+                                v-if="categoriesDropdownOpen"
+                                class="absolute top-full left-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 border"
+                                @click.stop
+                            >
+                                <div class="py-1">
+                                    <router-link
+                                        v-for="category in categories"
+                                        :key="category.id"
+                                        :to="`/produtos?categoria=${category.id}`"
+                                        class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-blue-600"
+                                        @click="categoriesDropdownOpen = false"
+                                    >
+                                        {{ category.name }}
+                                    </router-link>
+                                </div>
+                            </div>
+                        </div>
+
                         <router-link
                             to="/produtos"
                             class="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors"
@@ -46,12 +78,26 @@
                                 {{ cartCount }}
                             </span>
                         </router-link>
-                        <router-link
-                            to="/login"
-                            class="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors"
-                        >
-                            Login
-                        </router-link>
+                        <!-- Botão condicional: Login ou Logout -->
+                        <div v-if="!isAuthenticated">
+                            <router-link
+                                to="/login"
+                                class="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors"
+                            >
+                                Entrar
+                            </router-link>
+                        </div>
+                        <div v-else class="flex items-center space-x-4">
+                            <span class="text-gray-700 text-sm"
+                                >Olá, {{ user?.name || "Usuário" }}</span
+                            >
+                            <button
+                                @click="logout"
+                                class="bg-red-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-red-700 transition-colors"
+                            >
+                                Sair
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Mobile menu button -->
@@ -74,6 +120,41 @@
                         >
                             Início
                         </router-link>
+
+                        <!-- Categories Mobile -->
+                        <div>
+                            <button
+                                @click="
+                                    mobileCategoriesOpen = !mobileCategoriesOpen
+                                "
+                                class="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium flex items-center justify-between w-full"
+                            >
+                                Categorias
+                                <i
+                                    :class="[
+                                        'fas text-xs',
+                                        mobileCategoriesOpen
+                                            ? 'fa-chevron-up'
+                                            : 'fa-chevron-down',
+                                    ]"
+                                ></i>
+                            </button>
+                            <div
+                                v-if="mobileCategoriesOpen"
+                                class="ml-4 mt-2 space-y-1"
+                            >
+                                <router-link
+                                    v-for="category in categories"
+                                    :key="category.id"
+                                    :to="`/produtos?categoria=${category.id}`"
+                                    class="block px-3 py-2 text-sm text-gray-600 hover:text-blue-600"
+                                    @click="mobileMenuOpen = false"
+                                >
+                                    {{ category.name }}
+                                </router-link>
+                            </div>
+                        </div>
+
                         <router-link
                             to="/produtos"
                             class="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium"
@@ -86,12 +167,28 @@
                         >
                             Carrinho
                         </router-link>
-                        <router-link
-                            to="/login"
-                            class="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium"
-                        >
-                            Login
-                        </router-link>
+                        <!-- Botão condicional: Login ou Logout -->
+                        <div v-if="!isAuthenticated">
+                            <router-link
+                                to="/login"
+                                class="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium"
+                            >
+                                Entrar
+                            </router-link>
+                        </div>
+                        <div v-else class="px-3 py-2">
+                            <div class="flex flex-col space-y-2">
+                                <span class="text-gray-700 text-sm"
+                                    >Olá, {{ user?.name || "Usuário" }}</span
+                                >
+                                <button
+                                    @click="logout"
+                                    class="bg-red-600 text-white px-3 py-1 rounded-md text-sm font-medium hover:bg-red-700 transition-colors"
+                                >
+                                    Sair
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </nav>
@@ -179,18 +276,26 @@
 </template>
 
 <script>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, onBeforeUnmount, watch } from "vue";
 import FloatingCart from "@/components/cart/FloatingCart.vue";
+import { useAdminSync } from "@/composables/useAdminSync";
+import { useAuth } from "@/composables/useAuth";
 
 export default {
     name: "App",
     components: { FloatingCart },
     setup() {
         const mobileMenuOpen = ref(false);
+        const categoriesDropdownOpen = ref(false);
+        const mobileCategoriesOpen = ref(false);
         const cartCount = ref(0);
         const notification = ref(null);
 
-        // Simular contagem do carrinho
+        // Obter categorias do admin
+        const { categories, startPolling, stopPolling } = useAdminSync();
+
+        // Autenticação
+        const { isAuthenticated, user, logout } = useAuth(); // Simular contagem do carrinho
         const updateCartCount = () => {
             // Aqui você integraria com o composable useCart
             cartCount.value = 0;
@@ -206,6 +311,9 @@ export default {
 
         onMounted(() => {
             updateCartCount();
+
+            // Iniciar polling para sincronizar categorias do admin
+            startPolling(3000);
 
             // Inject Hotjar if configured
             try {
@@ -258,8 +366,16 @@ export default {
             }
         });
 
+        onBeforeUnmount(() => {
+            // Parar polling quando app for destruído
+            stopPolling();
+        });
+
         return {
             mobileMenuOpen,
+            categoriesDropdownOpen,
+            mobileCategoriesOpen,
+            categories,
             cartCount,
             notification,
             showNotification,
