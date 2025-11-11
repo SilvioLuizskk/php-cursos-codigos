@@ -7,7 +7,12 @@ import { adminService } from "@/services/adminService";
 let singleton = null;
 
 export function useAdminSync() {
-    if (singleton) return singleton;
+    if (singleton) {
+        console.log("[useAdminSync] returning existing singleton");
+        return singleton;
+    }
+
+    console.log("[useAdminSync] creating new singleton");
 
     const home = useHome();
     const settings = useSettings();
@@ -75,6 +80,7 @@ export function useAdminSync() {
     };
 
     const startPolling = (ms = 3000) => {
+        console.log("[useAdminSync] startPolling called with ms =", ms);
         pollingMs.value = ms;
         if (intervalId) return;
         // initial fetch
@@ -227,6 +233,7 @@ export function useAdminSync() {
         adminBanners,
         adminCategories,
         manualRefresh: async () => {
+            console.log("[useAdminSync] manualRefresh called");
             await Promise.all([home.fetchHomeData(), settings.manualRefresh()]);
             try {
                 const [prods, bans, cats] = await Promise.all([

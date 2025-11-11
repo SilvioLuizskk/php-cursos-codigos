@@ -329,6 +329,11 @@ export default {
             adminProducts,
         } = useAdminSync();
 
+        console.log(
+            "[ClientHome] useAdminSync destructured, adminProducts =",
+            adminProducts.value,
+        );
+
         const recommendedProducts = ref([
             {
                 id: 5,
@@ -388,13 +393,16 @@ export default {
 
             // Buscar dados iniciais (home + admin resources)
             try {
+                console.log("[ClientHome] calling manualRefresh");
                 await manualRefresh();
+                console.log("[ClientHome] manualRefresh completed");
             } catch (e) {
                 console.warn("Initial admin/home refresh failed", e);
             }
 
             // Iniciar polling para sincronizar tudo do admin (/home + settings)
             try {
+                console.log("[ClientHome] calling startPolling(3000)");
                 startPolling(3000); // polling a cada 3s
 
                 // Aplicar tema dinâmico quando settings mudarem
