@@ -10,8 +10,8 @@
             >
             <select v-model="filters.category" class="input">
                 <option value="">Todas</option>
-                <option v-for="cat in categories" :key="cat" :value="cat">
-                    {{ cat }}
+                <option v-for="cat in categories" :key="cat.id" :value="cat.id">
+                    {{ cat.name }}
                 </option>
             </select>
         </div>

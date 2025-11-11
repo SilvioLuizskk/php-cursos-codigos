@@ -17,7 +17,10 @@
                         Nossos Produtos
                     </h1>
                     <p class="text-lg text-gray-600">
-                        Descubra nossa coleção de chinelos personalizados
+                        Descubra nossa coleção de chinelos personalizados ({{
+                            adminProducts.length
+                        }}
+                        produtos carregados)
                     </p>
                 </div>
 
@@ -306,7 +309,7 @@
 </template>
 
 <script>
-import { ref, computed, onMounted, onBeforeUnmount } from "vue";
+import { ref, computed, onMounted, onBeforeUnmount, watch } from "vue";
 import SidebarFilters from "@/components/common/SidebarFilters.vue";
 import { useCart } from "@/composables/useCart";
 import { useAuth } from "@/composables/useAuth";
@@ -335,12 +338,8 @@ export default {
         });
         const showMobileFilters = ref(false);
 
-        // Usar categorias do admin via useAdminSync
-        const {
-            categories: adminCategories,
-            startPolling,
-            stopPolling,
-        } = useAdminSync();
+        // Usar produtos do admin via useAdminSync
+        const { adminProducts, startPolling, stopPolling } = useAdminSync();
 
         // Estado da visualização
         const viewMode = ref("grid");
@@ -420,11 +419,8 @@ export default {
         const loadProducts = async () => {
             loading.value = true;
             try {
-                // Simular chamada API
-                await new Promise((resolve) => setTimeout(resolve, 1000));
-
-                // Filtrar produtos
-                let filteredProducts = [...mockProducts];
+                // Filtrar produtos do admin
+                let filteredProducts = [...adminProducts.value];
 
                 if (filters.value.search) {
                     filteredProducts = filteredProducts.filter(
@@ -435,6 +431,12 @@ export default {
                             p.description
                                 .toLowerCase()
                                 .includes(filters.value.search.toLowerCase()),
+                    );
+                }
+
+                if (filters.value.category) {
+                    filteredProducts = filteredProducts.filter(
+                        (p) => p.category_id == filters.value.category,
                     );
                 }
 
@@ -574,7 +576,7 @@ export default {
 
         onMounted(() => {
             loadProducts();
-            // Iniciar polling para sincronizar categorias do admin
+            // Iniciar polling para sincronizar produtos e categorias do admin
             startPolling(3000);
         });
 
@@ -582,6 +584,19 @@ export default {
             // Parar polling quando componente for destruído
             stopPolling();
         });
+
+        // Assistir mudanças nos produtos do admin
+        watch(
+            () => adminProducts.value,
+            (newProducts) => {
+                console.log(
+                    "[ProductList] adminProducts changed:",
+                    newProducts.length,
+                );
+                loadProducts();
+            },
+            { immediate: true },
+        );
 
         return {
             loading,

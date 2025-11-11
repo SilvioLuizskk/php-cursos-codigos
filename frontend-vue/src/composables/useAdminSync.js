@@ -102,11 +102,6 @@ export function useAdminSync() {
                 adminCategories.value = Array.isArray(cats)
                     ? cats
                     : cats?.data || [];
-                console.log("[useAdminSync] initial admin fetch", {
-                    products: adminProducts.value.length,
-                    banners: adminBanners.value.length,
-                    categories: adminCategories.value.length,
-                });
             } catch (e) {
                 console.warn("useAdminSync: initial admin fetch failed", e);
             }
@@ -136,13 +131,6 @@ export function useAdminSync() {
                             adminCategories.value = Array.isArray(cats)
                                 ? cats
                                 : cats?.data || [];
-
-                            if (adminProducts.value.length !== oldP.length) {
-                                console.log(
-                                    "[useAdminSync] adminProducts changed ->",
-                                    adminProducts.value.length,
-                                );
-                            }
                         } catch (e) {
                             // ignore per-interval admin fetch errors
                         }

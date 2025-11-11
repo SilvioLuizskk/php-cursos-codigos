@@ -27,7 +27,7 @@
                         </router-link>
 
                         <!-- Categories Dropdown -->
-                        <div class="relative" x-data="{ open: false }">
+                        <div class="relative">
                             <button
                                 @click="
                                     categoriesDropdownOpen =
