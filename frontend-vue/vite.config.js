@@ -16,6 +16,11 @@ export default defineConfig({
             overlay: false,
         },
         proxy: {
+            "/api": {
+                target: "http://localhost:8100",
+                changeOrigin: true,
+                secure: false,
+            },
             "/storage": {
                 target: "http://localhost:8100",
                 changeOrigin: true,

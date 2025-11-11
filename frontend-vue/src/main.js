@@ -160,12 +160,6 @@ const routes = [
         meta: { title: "Detalhes do Pedido - EstampariaPro" },
     },
     {
-        path: "/health",
-        name: "HealthCheck",
-        component: HealthCheck,
-        meta: { title: "Health Check - EstampariaPro" },
-    },
-    {
         path: "/comunicacao-vertical",
         name: "ComunicacaoVertical",
         component: () => import("./components/ComunicacaoVerticalDemo.vue"),

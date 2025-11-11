@@ -271,7 +271,10 @@
                                     ]"
                                 >
                                     <div
-                                        v-for="product in categoryGroup.products"
+                                        v-for="product in getVisibleProducts(
+                                            categoryGroup.category.id,
+                                            categoryGroup.products,
+                                        )"
                                         :key="product.id"
                                         :class="[
                                             'group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 border border-gray-100 overflow-hidden flex-shrink-0',
@@ -447,8 +450,17 @@
                                                 <div
                                                     class="flex items-center mb-4"
                                                 >
+                                                    <!-- Rating Display/Interactive -->
                                                     <div
-                                                        class="flex text-yellow-400 mr-2"
+                                                        v-if="
+                                                            ratingProduct?.id !==
+                                                            product.id
+                                                        "
+                                                        class="flex text-yellow-400 mr-2 cursor-pointer group"
+                                                        @click="
+                                                            startRating(product)
+                                                        "
+                                                        title="Clique para avaliar este produto"
                                                     >
                                                         <i
                                                             v-for="n in 5"
@@ -458,11 +470,74 @@
                                                                 n <=
                                                                 (product.rating ||
                                                                     0)
-                                                                    ? 'fas fa-star text-yellow-400'
-                                                                    : 'far fa-star text-gray-300',
+                                                                    ? 'fas fa-star text-yellow-400 group-hover:text-yellow-500'
+                                                                    : 'far fa-star text-gray-300 group-hover:text-yellow-300',
                                                             ]"
                                                         ></i>
                                                     </div>
+
+                                                    <!-- Rating Input -->
+                                                    <div
+                                                        v-else
+                                                        class="flex items-center mr-2"
+                                                    >
+                                                        <div class="flex mr-3">
+                                                            <i
+                                                                v-for="n in 5"
+                                                                :key="n"
+                                                                :class="[
+                                                                    'cursor-pointer transition-colors duration-200',
+                                                                    n <=
+                                                                    userRating
+                                                                        ? 'fas fa-star text-yellow-400 hover:text-yellow-500'
+                                                                        : 'far fa-star text-gray-300 hover:text-yellow-300',
+                                                                ]"
+                                                                @click="
+                                                                    setUserRating(
+                                                                        n,
+                                                                    )
+                                                                "
+                                                                @mouseenter="
+                                                                    userRating =
+                                                                        n
+                                                                "
+                                                                @mouseleave="
+                                                                    userRating =
+                                                                        userRating
+                                                                "
+                                                            ></i>
+                                                        </div>
+                                                        <div class="flex gap-2">
+                                                            <button
+                                                                @click="
+                                                                    submitRating
+                                                                "
+                                                                :disabled="
+                                                                    submittingRating ||
+                                                                    userRating ===
+                                                                        0
+                                                                "
+                                                                class="px-3 py-1 bg-blue-600 text-white text-xs rounded-full hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                                            >
+                                                                <i
+                                                                    v-if="
+                                                                        submittingRating
+                                                                    "
+                                                                    class="fas fa-spinner fa-spin mr-1"
+                                                                ></i>
+                                                                OK
+                                                            </button>
+                                                            <button
+                                                                @click="
+                                                                    cancelRating
+                                                                "
+                                                                class="px-3 py-1 bg-gray-500 text-white text-xs rounded-full hover:bg-gray-600 transition-colors"
+                                                            >
+                                                                ✕
+                                                            </button>
+                                                        </div>
+                                                    </div>
+
                                                     <span
                                                         class="text-sm text-gray-500"
                                                     >
@@ -581,6 +656,89 @@
                                     </div>
                                 </TransitionGroup>
                             </div>
+
+                            <!-- Navigation Arrows for this Category -->
+                            <div
+                                class="flex items-center justify-center gap-4 mt-6"
+                            >
+                                <button
+                                    @click="
+                                        navigateCategory(
+                                            categoryGroup.category.id,
+                                            'prev',
+                                        )
+                                    "
+                                    :disabled="
+                                        getCurrentPage(
+                                            categoryGroup.category.id,
+                                        ) <= 1
+                                    "
+                                    class="p-4 bg-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed border border-gray-100 hover:bg-blue-50"
+                                    title="Produtos anteriores"
+                                >
+                                    <i
+                                        class="fas fa-chevron-left text-blue-600 text-xl"
+                                    ></i>
+                                </button>
+
+                                <div
+                                    class="flex items-center gap-2 px-4 py-2 bg-white rounded-full shadow-sm border border-gray-100"
+                                >
+                                    <span
+                                        class="text-sm text-gray-600 font-medium"
+                                    >
+                                        {{
+                                            getCurrentPage(
+                                                categoryGroup.category.id,
+                                            )
+                                        }}
+                                        de
+                                        {{
+                                            getTotalPages(
+                                                categoryGroup.category.id,
+                                            )
+                                        }}
+                                    </span>
+                                    <div class="flex gap-1 ml-2">
+                                        <div
+                                            v-for="pageIndex in getTotalPages(
+                                                categoryGroup.category.id,
+                                            )"
+                                            :key="pageIndex"
+                                            :class="[
+                                                'w-2 h-2 rounded-full transition-all duration-200',
+                                                pageIndex ===
+                                                getCurrentPage(
+                                                    categoryGroup.category.id,
+                                                )
+                                                    ? 'bg-blue-600'
+                                                    : 'bg-gray-300',
+                                            ]"
+                                        ></div>
+                                    </div>
+                                </div>
+
+                                <button
+                                    @click="
+                                        navigateCategory(
+                                            categoryGroup.category.id,
+                                            'next',
+                                        )
+                                    "
+                                    :disabled="
+                                        getCurrentPage(
+                                            categoryGroup.category.id,
+                                        ) >=
+                                        getTotalPages(categoryGroup.category.id)
+                                    "
+                                    class="p-4 bg-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed border border-gray-100 hover:bg-blue-50"
+                                    title="Próximos produtos"
+                                >
+                                    <i
+                                        class="fas fa-chevron-right text-blue-600 text-xl"
+                                    ></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
 
@@ -600,17 +758,17 @@
                                 <i class="fas fa-chevron-left"></i>
                             </button>
 
-                            <template v-for="page in visiblePages" :key="page">
+                            <template v-for="(page, idx) in visiblePages">
                                 <span
                                     v-if="page === '...'"
-                                    :key="'ellipsis-' + Math.random()"
+                                    :key="'ellipsis-' + idx"
                                     class="px-4 py-3 text-gray-500 cursor-default"
                                 >
                                     ...
                                 </span>
                                 <button
                                     v-else
-                                    :key="'page-' + page"
+                                    :key="'page-' + idx"
                                     @click="changePage(page)"
                                     :class="[
                                         'px-4 py-3 rounded-xl font-semibold transition-all duration-200',
@@ -739,18 +897,72 @@
                                 </p>
 
                                 <div class="flex items-center mb-6">
-                                    <div class="flex text-yellow-400 mr-2">
+                                    <!-- Rating Display/Interactive -->
+                                    <div
+                                        v-if="
+                                            ratingProduct?.id !==
+                                            quickViewProduct.id
+                                        "
+                                        class="flex text-yellow-400 mr-2 cursor-pointer group"
+                                        @click="startRating(quickViewProduct)"
+                                        title="Clique para avaliar este produto"
+                                    >
                                         <i
                                             v-for="n in 5"
                                             :key="n"
-                                            :class="
+                                            :class="[
+                                                'transition-colors duration-200',
                                                 n <=
                                                 (quickViewProduct.rating || 0)
-                                                    ? 'fas fa-star'
-                                                    : 'far fa-star'
-                                            "
+                                                    ? 'fas fa-star text-yellow-400 group-hover:text-yellow-500'
+                                                    : 'far fa-star text-gray-300 group-hover:text-yellow-300',
+                                            ]"
                                         ></i>
                                     </div>
+
+                                    <!-- Rating Input -->
+                                    <div v-else class="flex items-center mr-2">
+                                        <div class="flex mr-3">
+                                            <i
+                                                v-for="n in 5"
+                                                :key="n"
+                                                :class="[
+                                                    'cursor-pointer transition-colors duration-200',
+                                                    n <= userRating
+                                                        ? 'fas fa-star text-yellow-400 hover:text-yellow-500'
+                                                        : 'far fa-star text-gray-300 hover:text-yellow-300',
+                                                ]"
+                                                @click="setUserRating(n)"
+                                                @mouseenter="userRating = n"
+                                                @mouseleave="
+                                                    userRating = userRating
+                                                "
+                                            ></i>
+                                        </div>
+                                        <div class="flex gap-2">
+                                            <button
+                                                @click="submitRating"
+                                                :disabled="
+                                                    submittingRating ||
+                                                    userRating === 0
+                                                "
+                                                class="px-3 py-1 bg-blue-600 text-white text-xs rounded-full hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                            >
+                                                <i
+                                                    v-if="submittingRating"
+                                                    class="fas fa-spinner fa-spin mr-1"
+                                                ></i>
+                                                OK
+                                            </button>
+                                            <button
+                                                @click="cancelRating"
+                                                class="px-3 py-1 bg-gray-500 text-white text-xs rounded-full hover:bg-gray-600 transition-colors"
+                                            >
+                                                ✕
+                                            </button>
+                                        </div>
+                                    </div>
+
                                     <span class="text-sm text-gray-500">
                                         ({{ quickViewProduct.reviews || 0 }}
                                         avaliações)
@@ -803,6 +1015,7 @@ import { useAuth } from "@/composables/useAuth";
 import { useRouter } from "vue-router";
 import { useNotification } from "@/composables/useNotification";
 import { useAdminSync } from "@/composables/useAdminSync";
+import { useReviews } from "@/composables/useReviews";
 
 export default {
     name: "ProductList",
@@ -826,6 +1039,14 @@ export default {
         const showMobileFilters = ref(false);
         const quickViewProduct = ref(null);
 
+        // Estado para avaliação interativa
+        const ratingProduct = ref(null); // Produto sendo avaliado
+        const userRating = ref(0); // Avaliação selecionada pelo usuário
+        const submittingRating = ref(false); // Estado de loading da avaliação
+
+        // Controle de navegação por categoria
+        const categoryPages = ref({});
+
         // Usar produtos e categorias do admin via useAdminSync
         const { adminProducts, adminCategories, startPolling, stopPolling } =
             useAdminSync();
@@ -839,6 +1060,7 @@ export default {
         const { isAuthenticated } = useAuth();
         const router = useRouter();
         const { showSuccess, showError } = useNotification();
+        const { createReview } = useReviews();
 
         // Estado de loading por produto
         const addingToCart = ref(new Set());
@@ -898,6 +1120,8 @@ export default {
                 featured: false,
             },
         ];
+
+        const productsPerPage = 5;
 
         const totalPages = computed(() => {
             return Math.ceil(
@@ -1004,6 +1228,12 @@ export default {
                 if (filters.value.max_price) {
                     filteredProducts = filteredProducts.filter(
                         (p) => parseFloat(p.price) <= filters.value.max_price,
+                    );
+                }
+
+                if (filters.value.rating && filters.value.rating > 0) {
+                    filteredProducts = filteredProducts.filter(
+                        (p) => (p.rating || 0) >= filters.value.rating,
                     );
                 }
 
@@ -1168,6 +1398,42 @@ export default {
             }
         };
 
+        // Funções de navegação por categoria
+        const getCurrentPage = (categoryId) => {
+            return categoryPages.value[categoryId] || 1;
+        };
+
+        const getTotalPages = (categoryId) => {
+            const categoryGroup = productsByCategory.value.find(
+                (group) => group.category.id === categoryId,
+            );
+            if (!categoryGroup) return 1;
+            return Math.ceil(categoryGroup.products.length / productsPerPage);
+        };
+
+        const navigateCategory = (categoryId, direction) => {
+            const currentPage = getCurrentPage(categoryId);
+            const totalPages = getTotalPages(categoryId);
+            let newPage = currentPage;
+
+            if (direction === "next" && currentPage < totalPages) {
+                newPage = currentPage + 1;
+            } else if (direction === "prev" && currentPage > 1) {
+                newPage = currentPage - 1;
+            }
+
+            if (newPage !== currentPage) {
+                categoryPages.value[categoryId] = newPage;
+            }
+        };
+
+        const getVisibleProducts = (categoryId, products) => {
+            const currentPage = getCurrentPage(categoryId);
+            const startIndex = (currentPage - 1) * productsPerPage;
+            const endIndex = startIndex + productsPerPage;
+            return products.slice(startIndex, endIndex);
+        };
+
         onMounted(() => {
             loadProducts();
             // Iniciar polling para sincronizar produtos e categorias do admin
@@ -1191,6 +1457,66 @@ export default {
             },
             { immediate: true },
         );
+
+        // Inicializar páginas por categoria quando os grupos mudarem
+        watch(
+            () => productsByCategory.value,
+            (groups) => {
+                groups.forEach((g) => {
+                    if (!categoryPages.value[g.category.id]) {
+                        categoryPages.value[g.category.id] = 1;
+                    }
+                });
+            },
+            { immediate: true },
+        );
+
+        // Funções de avaliação interativa
+        const startRating = (product) => {
+            if (!isAuthenticated.value) {
+                router.push({
+                    name: "Login",
+                    query: { redirect: "/produtos" },
+                });
+                return;
+            }
+            ratingProduct.value = product;
+            userRating.value = 0; // Reset rating
+        };
+
+        const setUserRating = (rating) => {
+            userRating.value = rating;
+        };
+
+        const cancelRating = () => {
+            ratingProduct.value = null;
+            userRating.value = 0;
+        };
+
+        const submitRating = async () => {
+            if (!ratingProduct.value || userRating.value === 0) return;
+
+            submittingRating.value = true;
+            try {
+                await createReview(ratingProduct.value.id, {
+                    rating: userRating.value,
+                    title: "",
+                    comment: "",
+                });
+
+                // Reset states
+                ratingProduct.value = null;
+                userRating.value = 0;
+
+                // Recarregar produtos para atualizar ratings
+                loadProducts();
+            } catch (error) {
+                showError("Erro ao enviar avaliação. Tente novamente.");
+                console.error("Erro ao avaliar produto:", error);
+            } finally {
+                submittingRating.value = false;
+            }
+        };
 
         return {
             loading,
@@ -1220,6 +1546,20 @@ export default {
             quickView,
             formatPrice,
             handleImageError,
+            getVisibleProducts,
+            navigateCategory,
+            getCurrentPage,
+            getTotalPages,
+            productsPerPage,
+            categoryPages,
+            // Rating functions
+            ratingProduct,
+            userRating,
+            submittingRating,
+            startRating,
+            setUserRating,
+            cancelRating,
+            submitRating,
         };
     },
 };

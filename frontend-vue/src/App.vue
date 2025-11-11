@@ -78,12 +78,26 @@
                                 {{ cartCount }}
                             </span>
                         </router-link>
-                        <router-link
-                            to="/login"
-                            class="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors"
-                        >
-                            Login
-                        </router-link>
+                        <!-- Botão condicional: Login ou Logout -->
+                        <div v-if="!isAuthenticated">
+                            <router-link
+                                to="/login"
+                                class="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors"
+                            >
+                                Entrar
+                            </router-link>
+                        </div>
+                        <div v-else class="flex items-center space-x-4">
+                            <span class="text-gray-700 text-sm"
+                                >Olá, {{ user?.name || "Usuário" }}</span
+                            >
+                            <button
+                                @click="logout"
+                                class="bg-red-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-red-700 transition-colors"
+                            >
+                                Sair
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Mobile menu button -->
@@ -153,12 +167,28 @@
                         >
                             Carrinho
                         </router-link>
-                        <router-link
-                            to="/login"
-                            class="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium"
-                        >
-                            Login
-                        </router-link>
+                        <!-- Botão condicional: Login ou Logout -->
+                        <div v-if="!isAuthenticated">
+                            <router-link
+                                to="/login"
+                                class="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium"
+                            >
+                                Entrar
+                            </router-link>
+                        </div>
+                        <div v-else class="px-3 py-2">
+                            <div class="flex flex-col space-y-2">
+                                <span class="text-gray-700 text-sm"
+                                    >Olá, {{ user?.name || "Usuário" }}</span
+                                >
+                                <button
+                                    @click="logout"
+                                    class="bg-red-600 text-white px-3 py-1 rounded-md text-sm font-medium hover:bg-red-700 transition-colors"
+                                >
+                                    Sair
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </nav>
@@ -246,9 +276,10 @@
 </template>
 
 <script>
-import { ref, onMounted, onBeforeUnmount } from "vue";
+import { ref, onMounted, onBeforeUnmount, watch } from "vue";
 import FloatingCart from "@/components/cart/FloatingCart.vue";
 import { useAdminSync } from "@/composables/useAdminSync";
+import { useAuth } from "@/composables/useAuth";
 
 export default {
     name: "App",
@@ -263,7 +294,8 @@ export default {
         // Obter categorias do admin
         const { categories, startPolling, stopPolling } = useAdminSync();
 
-        // Simular contagem do carrinho
+        // Autenticação
+        const { isAuthenticated, user, logout } = useAuth(); // Simular contagem do carrinho
         const updateCartCount = () => {
             // Aqui você integraria com o composable useCart
             cartCount.value = 0;
