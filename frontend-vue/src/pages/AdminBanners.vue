@@ -376,12 +376,21 @@ const carouselBanners = computed(() =>
 );
 
 // Carregar banners da API
+import { resolveAssetUrl } from "@/services/api";
+
 const fetchBanners = async () => {
     loading.value = true;
     try {
         console.log("Carregando banners...");
         const response = await adminService.getBanners();
-        banners.value = response.data || [];
+
+        // adminService pode retornar diretamente um array ou um objeto { data: [...] }
+        const data = response?.data ?? response ?? [];
+
+        // Garantir array e normalizar URLs caso ainda haja caminhos relativos
+        banners.value = (Array.isArray(data) ? data : data?.data ?? [])
+            .map((b) => ({ ...b, image: resolveAssetUrl(b.image) }));
+
         console.log("Banners carregados:", banners.value);
     } catch (error) {
         console.error("Erro ao carregar banners:", error);

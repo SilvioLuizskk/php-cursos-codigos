@@ -1,4 +1,5 @@
 import { apiClient } from "@/services/api";
+import { resolveAssetUrl } from "@/services/api";
 
 export const adminService = {
     // Dashboard
@@ -74,7 +75,14 @@ export const adminService = {
     // Banners Admin
     async getBanners() {
         const response = await apiClient.get("/admin/banners");
-        return response.data;
+        // O backend pode retornar imagens como caminhos relativos (ex: /storage/...).
+        // Normalizar para URLs absolutas antes de devolver aos componentes.
+        const data = response.data;
+        if (Array.isArray(data)) {
+            return data.map((b) => ({ ...b, image: resolveAssetUrl(b.image) }));
+        }
+
+        return data;
     },
 
     async createBanner(bannerData) {
