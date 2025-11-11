@@ -7,6 +7,9 @@ import axios from "axios";
 const API_BASE_URL =
     import.meta.env.VITE_API_URL || "http://127.0.0.1:8100/api";
 
+// Debug: mostrar a baseURL usada pelo cliente API para evitar confusões de CORS/URL
+console.log("[api] API_BASE_URL:", API_BASE_URL);
+
 // Origem da API (sem o sufixo /api) — útil para montar URLs de assets retornadas pelo backend
 export const API_ORIGIN = API_BASE_URL.replace(/\/api\/?$/, "");
 

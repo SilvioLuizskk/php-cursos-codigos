@@ -1,4 +1,5 @@
 import { createApp } from "vue";
+import { createPinia } from "pinia";
 import { createRouter, createWebHistory } from "vue-router";
 import App from "./App.vue";
 import "./style.css";
@@ -57,6 +58,7 @@ import AdminLayout from "./components/AdminLayout.vue";
 
 // Importar páginas (apenas as que não são lazy-loaded)
 import Home from "./pages/Home.vue";
+import ClientHome from "./pages/ClientHome.vue";
 import Login from "./pages/Login.vue";
 import AdminLogin from "./pages/AdminLogin.vue";
 import Register from "./pages/Register.vue";
@@ -88,8 +90,7 @@ import AdminMetricas from "./pages/AdminMetricas.vue";
 const routes = [
     {
         path: "/",
-        name: "Home",
-        component: Home,
+        redirect: "/cliente",
         meta: { title: "Início - EstampariaPro" },
     },
     {
@@ -169,6 +170,12 @@ const routes = [
         name: "ComunicacaoVertical",
         component: () => import("./components/ComunicacaoVerticalDemo.vue"),
         meta: { title: "Comunicação Vertical - EstampariaPro" },
+    },
+    {
+        path: "/cliente",
+        name: "ClientHome",
+        component: ClientHome,
+        meta: { title: "Cliente - EstampariaPro" },
     },
     {
         path: "/ab-dashboard",
@@ -269,6 +276,9 @@ router.beforeEach(async (to, from, next) => {
 // Debug: log app start to help diagnose mount issues
 console.log("[app] starting - main.js");
 const app = createApp(App);
+// Registrar Pinia (store) globalmente antes de montar a aplicação
+const pinia = createPinia();
+app.use(pinia);
 app.use(router);
 
 // Initialize Sentry if DSN provided (dynamic import so dependency is optional)

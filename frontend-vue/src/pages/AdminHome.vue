@@ -399,17 +399,120 @@
             </div>
         </div>
     </div>
+
+    <!-- Modals: edição de produto e confirmação de exclusão -->
+    <div>
+        <div
+            v-if="productModalVisible"
+            class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+        >
+            <div class="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+                <h3 class="text-lg font-semibold mb-4">Editar Produto</h3>
+                <form @submit.prevent="saveEditedProduct" class="space-y-4">
+                    <div>
+                        <label
+                            class="block text-sm font-medium text-gray-700 mb-1"
+                            >Nome</label
+                        >
+                        <input
+                            v-model="productForm.name"
+                            type="text"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                        />
+                        <p
+                            v-if="productFormErrors.name"
+                            class="text-sm text-red-600 mt-1"
+                        >
+                            {{ productFormErrors.name[0] }}
+                        </p>
+                    </div>
+                    <div>
+                        <label
+                            class="block text-sm font-medium text-gray-700 mb-1"
+                            >Preço</label
+                        >
+                        <input
+                            v-model.number="productForm.price"
+                            type="number"
+                            step="0.01"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                        />
+                        <p
+                            v-if="productFormErrors.price"
+                            class="text-sm text-red-600 mt-1"
+                        >
+                            {{ productFormErrors.price[0] }}
+                        </p>
+                    </div>
+                    <div>
+                        <ImageUpload
+                            v-model="productForm.image"
+                            label="Imagem do Produto"
+                            preview-alt="Preview do produto"
+                        />
+                        <p
+                            v-if="productFormErrors.image"
+                            class="text-sm text-red-600 mt-1"
+                        >
+                            {{ productFormErrors.image[0] }}
+                        </p>
+                    </div>
+                    <div class="flex justify-end space-x-3 pt-4">
+                        <button
+                            type="button"
+                            @click="productModalVisible = false"
+                            class="px-4 py-2 text-gray-600"
+                        >
+                            Cancelar
+                        </button>
+                        <button
+                            type="submit"
+                            :disabled="productSaving"
+                            class="px-4 py-2 bg-blue-600 text-white rounded"
+                        >
+                            {{ productSaving ? "Salvando..." : "Salvar" }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <ConfirmModal
+            :visible="confirmVisible"
+            title="Confirmar exclusão"
+            :message="
+                confirmTarget
+                    ? `Deseja realmente excluir ${confirmTarget.name}?`
+                    : 'Deseja realmente excluir?'
+            "
+            @confirm="onConfirmDeleteHomeEntity"
+            @cancel="onCancelConfirm"
+        />
+    </div>
 </template>
+
 <script setup>
 import { ref, onMounted } from "vue";
 import { useNotification } from "@/composables/useNotification";
 import ImageUpload from "@/components/ImageUpload.vue";
-import { apiClient } from "@/services/api";
+import ConfirmModal from "@/components/ConfirmModal.vue";
+import { apiClient, resolveAssetUrl } from "@/services/api";
 
 const { showNotification } = useNotification();
 
 const previewMode = ref(false);
 const saving = ref(false);
+
+// Confirm modal state for deletions
+const confirmVisible = ref(false);
+const confirmTarget = ref(null); // { type: 'category'|'product'|'banner', id, name }
+
+// Product edit modal state (for featured products)
+const productModalVisible = ref(false);
+const editingProduct = ref(null);
+const productForm = ref({ id: null, name: "", price: 0, image: "" });
+const productFormErrors = ref({});
+const productSaving = ref(false);
 
 const homeData = ref({
     hero: {
@@ -474,13 +577,27 @@ const homeData = ref({
     },
 });
 
-// Simulação de carregamento dos dados da home
+// Carregar dados da home a partir do backend
 const loadHomeData = async () => {
     try {
-        // Simulação - substitua pela chamada real da API
-        // const response = await api.get('/home-config')
-        // homeData.value = response.data
-        console.log("Dados da home carregados:", homeData.value);
+        const res = await apiClient.get("/home-config");
+        const data = res?.data ?? res;
+        // Se o backend retornar objetos com imagens relativas, normalize-as
+        if (data?.hero?.image)
+            data.hero.image = resolveAssetUrl(data.hero.image);
+        if (Array.isArray(data?.featuredCategories)) {
+            data.featuredCategories = data.featuredCategories.map((c) => ({
+                ...c,
+                image: resolveAssetUrl(c.image),
+            }));
+        }
+        if (Array.isArray(data?.featuredProducts?.items)) {
+            data.featuredProducts.items = data.featuredProducts.items.map(
+                (p) => ({ ...p, image: resolveAssetUrl(p.image) }),
+            );
+        }
+
+        homeData.value = { ...homeData.value, ...data };
     } catch (error) {
         console.error("Erro ao carregar dados da home:", error);
         showNotification(
@@ -493,12 +610,7 @@ const loadHomeData = async () => {
 const saveHomePage = async () => {
     saving.value = true;
     try {
-        // Simulação - substitua pela chamada real da API
-        // await api.put('/home-config', homeData.value)
-
-        // Simular delay de salvamento
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-
+        await apiClient.put("/home-config", homeData.value);
         showNotification("Página inicial salva com sucesso!", "success");
     } catch (error) {
         console.error("Erro ao salvar página inicial:", error);
@@ -550,39 +662,105 @@ const editCategory = (category) => {
     // Aqui você pode abrir um modal de edição real
 };
 
-// Excluir categoria
-const deleteCategory = async (category) => {
+// (A exclusão de categoria agora usa o modal de confirmação)
+
+// Editar produto: abrir modal de edição
+const editProduct = (product) => {
+    editingProduct.value = product;
+    productForm.value = {
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        image: product.image,
+    };
+    productFormErrors.value = {};
+    productModalVisible.value = true;
+};
+
+// Excluir produto: abrir confirmação
+const deleteProduct = (product) => {
+    confirmTarget.value = {
+        type: "product",
+        id: product.id,
+        name: product.name,
+    };
+    confirmVisible.value = true;
+};
+
+// Excluir categoria: abrir confirmação (substitui ação direta)
+const deleteCategory = (category) => {
+    confirmTarget.value = {
+        type: "category",
+        id: category.id,
+        name: category.name,
+    };
+    confirmVisible.value = true;
+};
+
+// Confirmação: executar exclusão conforme o target
+const onConfirmDeleteHomeEntity = async () => {
+    const target = confirmTarget.value;
+    confirmVisible.value = false;
+    if (!target) return;
     try {
-        await apiClient.delete(`/home-config/category/${category.id}`);
-        // Remove do array local
-        homeData.value.featuredCategories =
-            homeData.value.featuredCategories.filter(
-                (c) => c.id !== category.id,
+        if (target.type === "product") {
+            await apiClient.delete(`/home-config/product/${target.id}`);
+            homeData.value.featuredProducts.items = homeData.value.featuredProducts.items.filter(
+                (p) => p.id !== target.id,
             );
-        showNotification(`Categoria '${category.name}' excluída!`, "success");
+            showNotification(`Produto '${target.name}' excluído!`, "success");
+        } else if (target.type === "category") {
+            await apiClient.delete(`/home-config/category/${target.id}`);
+            homeData.value.featuredCategories = homeData.value.featuredCategories.filter(
+                (c) => c.id !== target.id,
+            );
+            showNotification(`Categoria '${target.name}' excluída!`, "success");
+        }
     } catch (error) {
-        showNotification("Erro ao excluir categoria", "error");
+        console.error("Erro ao excluir (confirm):", error);
+        showNotification("Erro ao excluir item", "error");
+    } finally {
+        confirmTarget.value = null;
     }
 };
 
-// Editar produto (exemplo: abrir modal, aqui só mostra notificação)
-const editProduct = (product) => {
-    showNotification(`Editar produto: ${product.name}`, "info");
-    // Aqui você pode abrir um modal de edição real
+const onCancelConfirm = () => {
+    confirmVisible.value = false;
+    confirmTarget.value = null;
 };
 
-// Excluir produto
-const deleteProduct = async (product) => {
+// Salvar alteração feita no modal de produto
+const saveEditedProduct = async () => {
+    productSaving.value = true;
+    productFormErrors.value = {};
     try {
-        await apiClient.delete(`/home-config/product/${product.id}`);
-        // Remove do array local
-        homeData.value.featuredProducts.items =
-            homeData.value.featuredProducts.items.filter(
-                (p) => p.id !== product.id,
-            );
-        showNotification(`Produto '${product.name}' excluído!`, "success");
+        const res = await apiClient.put(
+            `/home-config/product/${productForm.value.id}`,
+            productForm.value,
+        );
+        const updated = res?.data ?? res;
+        const idx = homeData.value.featuredProducts.items.findIndex(
+            (p) => p.id === productForm.value.id,
+        );
+        if (idx !== -1) {
+            homeData.value.featuredProducts.items[idx] = {
+                ...homeData.value.featuredProducts.items[idx],
+                ...updated,
+            };
+        }
+        showNotification("Produto atualizado com sucesso!", "success");
+        productModalVisible.value = false;
     } catch (error) {
-        showNotification("Erro ao excluir produto", "error");
+        console.error("Erro ao salvar produto editado:", error);
+        if (error?.response && error.response.status === 422) {
+            productFormErrors.value = error.response.data.errors || {};
+            const messages = Object.values(productFormErrors.value).flat().join(", ");
+            showNotification(messages || "Dados inválidos", "error");
+        } else {
+            showNotification("Erro ao salvar produto", "error");
+        }
+    } finally {
+        productSaving.value = false;
     }
 };
 

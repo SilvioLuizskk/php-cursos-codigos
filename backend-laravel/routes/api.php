@@ -131,6 +131,8 @@ Route::group([], function () {
     });
 
     // ==================== HOME CONFIG (ADMIN) ====================
+    // Configuração completa da home
+    Route::put('/home-config', [HomeController::class, 'updateHomeConfig']);
     // Banner
     Route::put('/home-config/banner', [HomeController::class, 'updateBanner']);
     Route::delete('/home-config/banner/{id}', [HomeController::class, 'deleteBanner']);

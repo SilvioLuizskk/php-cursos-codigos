@@ -2,7 +2,7 @@
     <div class="home">
         <!-- Hero Section (A/B variant-enabled) -->
         <section
-            class="bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-700 text-white py-20 relative overflow-hidden"
+            class="client-hero bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-700 text-white py-20 relative overflow-hidden"
         >
             <!-- Background Pattern -->
             <div class="absolute inset-0 opacity-10">
@@ -49,13 +49,13 @@
                         >
                             <router-link
                                 to="/produtos"
-                                class="bg-white text-blue-600 px-8 py-4 rounded-lg font-semibold hover:bg-gray-100 hover:scale-105 transition-all duration-300 inline-block shadow-lg hover:shadow-xl"
+                                class="bg-white text-blue-600 px-10 py-4 rounded-full font-semibold hover:bg-gray-100 hover:scale-105 transition-all duration-300 inline-block shadow-2xl hover:shadow-2xl"
                             >
                                 <i class="fas fa-eye mr-2"></i>Ver Produtos
                             </router-link>
                             <button
                                 @click="onStartClick"
-                                class="border-2 border-white text-white px-8 py-4 rounded-lg font-semibold hover:bg-white hover:text-blue-600 hover:scale-105 transition-all duration-300 inline-block shadow-lg hover:shadow-xl"
+                                class="border-2 border-white text-white px-10 py-4 rounded-full font-semibold hover:bg-white hover:text-blue-600 hover:scale-105 transition-all duration-300 inline-block shadow-2xl hover:shadow-2xl"
                             >
                                 <i class="fas fa-rocket mr-2"></i>
                                 <span v-if="variant === 'B'"
@@ -69,6 +69,28 @@
             </div>
         </section>
 
+        <!-- Debug Panel (temporary) -->
+        <section class="py-10 bg-yellow-100 border-t-4 border-yellow-500">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">
+                    Debug: Produtos Admin Recebidos
+                </h3>
+                <div class="bg-white p-4 rounded shadow">
+                    <p class="text-sm text-gray-600 mb-2">
+                        Quantidade de produtos admin:
+                        <strong>{{ adminProducts.length }}</strong>
+                    </p>
+                    <p class="text-sm text-gray-600 mb-2">
+                        Primeiro produto (JSON):
+                    </p>
+                    <pre
+                        class="text-xs bg-gray-100 p-2 rounded overflow-auto max-h-40"
+                        >{{ JSON.stringify(adminProducts[0], null, 2) }}</pre
+                    >
+                </div>
+            </div>
+        </section>
+
         <!-- Features Section -->
         <section class="py-20 bg-white">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -77,12 +99,11 @@
                         <h2
                             class="text-3xl md:text-4xl font-bold text-gray-900 mb-4"
                         >
-                            Por que escolher a EstampariaPro?
+                            Bem-vindo à Loja Chinelos Karibe
                         </h2>
                         <p class="text-lg text-gray-600 max-w-3xl mx-auto">
-                            Oferecemos chinelos de alta qualidade com
-                            personalização exclusiva, entrega rápida e
-                            atendimento excepcional.
+                            Encontre chinelos confortáveis e estilosos, com
+                            opções de personalização e entrega rápida.
                         </p>
                     </div>
                 </Transition>
@@ -90,7 +111,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                     <Transition name="fade-up" appear :delay="100">
                         <div
-                            class="text-center p-8 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl hover:shadow-lg transition-all duration-300 transform hover:-translate-y-2 group"
+                            class="text-center p-8 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 group card"
                         >
                             <div
                                 class="w-20 h-20 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300"
@@ -113,7 +134,7 @@
 
                     <Transition name="fade-up" appear :delay="200">
                         <div
-                            class="text-center p-8 bg-gradient-to-br from-green-50 to-green-100 rounded-xl hover:shadow-lg transition-all duration-300 transform hover:-translate-y-2 group"
+                            class="text-center p-8 bg-gradient-to-br from-green-50 to-green-100 rounded-xl hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 group card"
                         >
                             <div
                                 class="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300"
@@ -135,7 +156,7 @@
 
                     <Transition name="fade-up" appear :delay="300">
                         <div
-                            class="text-center p-8 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl hover:shadow-lg transition-all duration-300 transform hover:-translate-y-2 group"
+                            class="text-center p-8 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 group card"
                         >
                             <div
                                 class="w-20 h-20 bg-purple-500 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300"
@@ -272,31 +293,23 @@
         </section>
 
         <!-- Demo Link Section -->
-        <section class="py-8 bg-gray-800 text-white">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-                <p class="text-sm opacity-75 mb-2">👨‍💻 Para Desenvolvedores</p>
-                <router-link
-                    to="/comunicacao-vertical"
-                    class="text-blue-400 hover:text-blue-300 underline text-sm"
-                >
-                    Ver Demonstração: Comunicação Vertical Descendente em Vue.js
-                </router-link>
-            </div>
-        </section>
+        <!-- Seção de demonstrações removida para versão cliente -->
     </div>
 </template>
 
 <script>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, onBeforeUnmount, watch } from "vue";
+import { useAdminSync } from "@/composables/useAdminSync";
 import { useRouter } from "vue-router";
 import RecommendedCarousel from "@/components/product/RecommendedCarousel.vue";
 import ProductsGrid from "@/components/ProductsGrid.vue";
 import { useABTest } from "@/composables/useABTest";
-import { useHome } from "@/composables/useHome";
+// import useHome removed: using useAdminSync which covers home + admin resources
 
 export default {
-    name: "Home",
-    components: { RecommendedCarousel },
+    name: "ClientHome",
+    // Registrar ProductsGrid localmente para que o template consiga resolver o componente
+    components: { RecommendedCarousel, ProductsGrid },
     setup() {
         const router = useRouter();
         const { getVariant, recordConversion } = useABTest();
@@ -309,8 +322,12 @@ export default {
             banners,
             loading,
             error,
-            fetchHomeData,
-        } = useHome();
+            settings,
+            startPolling,
+            stopPolling,
+            manualRefresh,
+            adminProducts,
+        } = useAdminSync();
 
         const recommendedProducts = ref([
             {
@@ -369,12 +386,76 @@ export default {
             }
             console.log("Home page loaded, variant=", variant.value);
 
-            // Buscar dados da home do backend
+            // Buscar dados iniciais (home + admin resources)
             try {
-                await fetchHomeData();
+                await manualRefresh();
             } catch (e) {
-                console.warn("Home data fetch failed", e);
+                console.warn("Initial admin/home refresh failed", e);
             }
+
+            // Iniciar polling para sincronizar tudo do admin (/home + settings)
+            try {
+                startPolling(3000); // polling a cada 3s
+
+                // Aplicar tema dinâmico quando settings mudarem
+                watch(
+                    () => settings.value?.theme,
+                    (theme) => {
+                        if (!theme) return;
+                        try {
+                            const primary =
+                                theme.primary_color || theme.primaryColor;
+                            const secondary =
+                                theme.secondary_color || theme.secondaryColor;
+                            if (primary)
+                                document.documentElement.style.setProperty(
+                                    "--primary-color",
+                                    primary,
+                                );
+                            if (secondary)
+                                document.documentElement.style.setProperty(
+                                    "--secondary-color",
+                                    secondary,
+                                );
+                        } catch (e) {
+                            // ignore
+                        }
+                    },
+                    { immediate: true },
+                );
+                // Logar atualizações de produtos/banners para ajudar depuração
+                watch(
+                    () => featuredProducts.value,
+                    (list) => {
+                        console.log(
+                            "[ClientHome] featuredProducts updated ->",
+                            (list || []).length,
+                        );
+                    },
+                    { immediate: true },
+                );
+
+                watch(
+                    () => banners.value,
+                    (list) => {
+                        console.log(
+                            "[ClientHome] banners updated ->",
+                            (list || []).length,
+                        );
+                    },
+                    { immediate: true },
+                );
+            } catch (e) {
+                console.warn("Failed to start admin sync polling", e);
+            }
+            // Stop polling on unmount
+            onBeforeUnmount(() => {
+                try {
+                    stopPolling();
+                } catch (e) {
+                    // ignore
+                }
+            });
         });
 
         function onStartClick() {
@@ -382,7 +463,6 @@ export default {
             recordConversion("homepage_hero", variant.value);
             router.push("/produtos");
         }
-
         return {
             featuredProducts,
             recommendedProducts,
@@ -395,6 +475,7 @@ export default {
             viewProduct,
             variant,
             onStartClick,
+            adminProducts,
         };
     },
 };
@@ -485,5 +566,39 @@ export default {
     -webkit-box-orient: vertical;
     line-clamp: 2;
     overflow: hidden;
+}
+
+/* Client-specific styles */
+.client-hero {
+    background-image:
+        linear-gradient(rgba(11, 83, 212, 0.6), rgba(79, 70, 229, 0.6)),
+        url("https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=1600&q=60");
+    background-size: cover;
+    background-position: center;
+}
+
+.card {
+    border: 1px solid rgba(15, 23, 42, 0.04);
+}
+
+.product-card img {
+    width: 100%;
+    height: 160px;
+    object-fit: cover;
+}
+
+.product-card .p-6 {
+    min-height: 220px;
+}
+
+/* Buttons */
+.rounded-full {
+    border-radius: 9999px;
+}
+
+@media (max-width: 768px) {
+    .product-card img {
+        height: 120px;
+    }
 }
 </style>

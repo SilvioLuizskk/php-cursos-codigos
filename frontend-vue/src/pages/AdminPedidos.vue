@@ -509,7 +509,9 @@ const loadOrders = async () => {
     try {
         loading.value = true;
         const response = await adminService.getOrders();
-        orders.value = response.data.data || response.data;
+        const data = response?.data ?? response ?? [];
+        // Alguns endpoints devolvem { data: [...] } e outros já devolvem o array
+        orders.value = Array.isArray(data) ? data : (data.data ?? data);
         filterOrders();
     } catch (error) {
         console.error("Erro ao carregar pedidos:", error);
@@ -559,7 +561,7 @@ const updateOrderStatus = async (orderId, newStatus) => {
 const viewOrderDetails = async (order) => {
     try {
         const response = await adminService.getOrder(order.id);
-        selectedOrder.value = response.data;
+        selectedOrder.value = response?.data ?? response ?? order;
     } catch (error) {
         console.error("Erro ao carregar detalhes do pedido:", error);
         showNotification("Erro ao carregar detalhes do pedido", "error");
@@ -574,14 +576,26 @@ const addTracking = (order) => {
 
 const saveTracking = async () => {
     try {
-        const order = orders.value.find((o) => o.id === trackingOrderId.value);
-        if (order) {
-            order.trackingCode = trackingCode.value;
-            showNotification(
-                "Código de rastreamento adicionado com sucesso!",
-                "success",
-            );
+        if (!trackingOrderId.value) return;
+
+        // Atualizar no backend usando updateOrder
+        await adminService.updateOrder(trackingOrderId.value, {
+            trackingCode: trackingCode.value,
+        });
+
+        // Recarregar pedidos e detalhes
+        await loadOrders();
+        if (
+            selectedOrder.value &&
+            selectedOrder.value.id === trackingOrderId.value
+        ) {
+            await viewOrderDetails(selectedOrder.value);
         }
+
+        showNotification(
+            "Código de rastreamento adicionado com sucesso!",
+            "success",
+        );
         showTrackingModal.value = false;
         trackingCode.value = "";
         trackingOrderId.value = null;

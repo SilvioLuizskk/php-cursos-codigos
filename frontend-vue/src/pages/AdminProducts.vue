@@ -219,7 +219,6 @@
 <script setup>
 import { ref, computed, nextTick, onMounted, watch } from "vue";
 import { useRoute } from "vue-router";
-import productService from "@/services/productService";
 import { adminService } from "@/services/adminService";
 import { useNotification } from "@/composables/useNotification";
 import { useImageUpload } from "@/composables/useImageUpload";
@@ -252,35 +251,20 @@ const hasUploadingImages = computed(() =>
 
 async function fetchProducts() {
     try {
-        console.log("Buscando produtos...");
-        console.log("adminService disponível:", !!adminService);
-        console.log(
-            "adminService.getAdminProducts:",
-            typeof adminService.getAdminProducts,
-        );
-        const data = await adminService.getAdminProducts();
-        console.log("Produtos recebidos:", data);
-        console.log("Tipo de data:", typeof data);
-        console.log("data.data:", data.data);
-        products.value = data.data || data;
-        console.log("Produtos atribuídos:", products.value);
+        const res = await adminService.getAdminProducts();
+        const data = res?.data ?? res ?? [];
+        products.value = Array.isArray(data) ? data : data.data ?? data;
     } catch (error) {
         console.error("Erro ao buscar produtos:", error);
-        console.error(
-            "Detalhes do erro:",
-            error.response?.data || error.message,
-        );
-        // Não mostrar notificação para evitar spam, apenas log
         products.value = [];
     }
 }
 
 async function fetchCategories() {
     try {
-        console.log("Buscando categorias...");
-        const data = await adminService.getCategories();
-        console.log("Categorias recebidas:", data);
-        categories.value = data.data || data;
+        const res = await adminService.getCategories();
+        const data = res?.data ?? res ?? [];
+        categories.value = Array.isArray(data) ? data : data.data ?? data;
     } catch (error) {
         console.error("Erro ao buscar categorias:", error);
         showNotification("Erro ao carregar categorias", "error");
