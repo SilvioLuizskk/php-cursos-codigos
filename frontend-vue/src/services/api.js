@@ -70,6 +70,13 @@ apiClient.interceptors.request.use(
                 ...config.params,
                 _t: Date.now(),
             };
+            // Adicionar headers para forçar refresh e evitar cache
+            config.headers = {
+                ...config.headers,
+                "Cache-Control": "no-cache, no-store, must-revalidate",
+                "Pragma": "no-cache",
+                "Expires": "0",
+            };
         }
 
         return config;
