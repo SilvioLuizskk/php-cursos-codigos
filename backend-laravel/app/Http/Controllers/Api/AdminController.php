@@ -230,8 +230,11 @@ class AdminController extends Controller
                 'description' => 'nullable|string',
                 // Accept either an absolute URL (http(s)://...) or a storage path like '/storage/...'
                 'image' => ['nullable', 'string', 'regex:/^(https?:\\/\\/.+|\\/storage\\/.+)$/'],
-                'active' => 'required|boolean',
+                    'active' => 'nullable|boolean',
             ]);
+                if (!array_key_exists('active', $validated)) {
+                    $validated['active'] = true;
+                }
 
             $category = Category::create($validated);
 
@@ -252,7 +255,7 @@ class AdminController extends Controller
                 'description' => 'nullable|string',
                 // Accept either an absolute URL or a storage path
                 'image' => ['nullable', 'string', 'regex:/^(https?:\\/\\/.+|\\/storage\\/.+)$/'],
-                'status' => 'sometimes|required|in:active,inactive',
+                    'active' => 'sometimes|boolean',
             ]);
 
             $category->update($validated);
@@ -295,9 +298,21 @@ class AdminController extends Controller
                 'image' => ['required', 'string', 'regex:/^(https?:\\/\\/.+|\\/storage\\/.+)$/'],
                 'link' => 'nullable|url',
                 'position' => 'required|in:hero,sidebar,carousel',
-                'status' => 'required|in:active,inactive',
+                    'status' => 'nullable|in:active,inactive',
+                    'active' => 'nullable|boolean',
                 'order' => 'required|integer|min:0',
             ]);
+
+                // Normalize active/status fields: prefer explicit status, then active boolean, default to active
+                if (!isset($validated['status'])) {
+                    if (array_key_exists('active', $validated)) {
+                        $validated['status'] = $validated['active'] ? 'active' : 'inactive';
+                    } else {
+                        $validated['status'] = 'active';
+                    }
+                }
+                // Remove 'active' key so mass-assignment uses 'status'
+                unset($validated['active']);
 
             $banner = Banner::create($validated);
 
@@ -316,9 +331,15 @@ class AdminController extends Controller
                 'image' => ['sometimes', 'required', 'string', 'regex:/^(https?:\\/\\/.+|\\/storage\\/.+)$/'],
                 'link' => 'nullable|url',
                 'position' => 'sometimes|required|in:hero,sidebar,carousel',
-                'status' => 'sometimes|required|in:active,inactive',
+                    'status' => 'sometimes|in:active,inactive',
+                    'active' => 'sometimes|boolean',
                 'order' => 'sometimes|required|integer|min:0',
             ]);
+
+                if (array_key_exists('active', $validated) && !array_key_exists('status', $validated)) {
+                    $validated['status'] = $validated['active'] ? 'active' : 'inactive';
+                    unset($validated['active']);
+                }
 
             $banner->update($validated);
 
