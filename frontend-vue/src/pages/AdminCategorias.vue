@@ -289,8 +289,8 @@ const saveCategory = async () => {
         console.error("Erro ao salvar categoria:", error);
         if (error?.response && error.response.status === 422) {
             formErrors.value = error.response.data.errors || {};
-            const messages = Object.values(formErrors.value).flat().join(', ');
-            showNotification(messages || 'Dados inválidos', 'error');
+            const messages = Object.values(formErrors.value).flat().join(", ");
+            showNotification(messages || "Dados inválidos", "error");
         } else {
             showNotification("Erro ao salvar categoria", "error");
         }
@@ -306,9 +306,8 @@ const editCategory = (category) => {
 };
 
 const deleteCategory = async (id) => {
-    if (!confirm("Tem certeza que deseja excluir esta categoria?")) return;
-
     try {
+        // Removido confirm() nativo — mostrar apenas notificação e executar ação
         await adminService.deleteCategory(id);
         categories.value = categories.value.filter((c) => c.id !== id);
         showNotification("Categoria excluída com sucesso!", "success");

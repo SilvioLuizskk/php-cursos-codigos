@@ -473,8 +473,8 @@ const saveBanner = async () => {
         console.error("Erro ao salvar banner:", error);
         if (error?.response && error.response.status === 422) {
             formErrors.value = error.response.data.errors || {};
-            const messages = Object.values(formErrors.value).flat().join(', ');
-            showNotification(messages || 'Dados inválidos', 'error');
+            const messages = Object.values(formErrors.value).flat().join(", ");
+            showNotification(messages || "Dados inválidos", "error");
         } else {
             showNotification("Erro ao salvar banner", "error");
         }
@@ -490,9 +490,8 @@ const editBanner = (banner) => {
 };
 
 const deleteBanner = async (id) => {
-    if (!confirm("Tem certeza que deseja excluir este banner?")) return;
-
     try {
+        // Removido confirm() nativo — apenas notificação
         await adminService.deleteBanner(id);
         banners.value = banners.value.filter((b) => b.id !== id);
         showNotification("Banner excluído com sucesso!", "success");

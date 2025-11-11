@@ -343,13 +343,20 @@ const savePage = async () => {
             return;
         }
 
+        // Mapear `active` (checkbox) para `status` esperado pelo backend
+        const payload = { ...form.value };
+        if (payload.hasOwnProperty('active')) {
+            payload.status = payload.active ? 'published' : 'draft';
+            delete payload.active;
+        }
+
         if (editingPage.value) {
             console.log("Atualizando página existente:", editingPage.value.id);
-            await pageService.updatePage(editingPage.value.id, form.value);
+            await pageService.updatePage(editingPage.value.id, payload);
             showNotification("Página atualizada com sucesso!", "success");
         } else {
             console.log("Criando nova página");
-            await pageService.createPage(form.value);
+            await pageService.createPage(payload);
             showNotification("Página criada com sucesso!", "success");
         }
 
