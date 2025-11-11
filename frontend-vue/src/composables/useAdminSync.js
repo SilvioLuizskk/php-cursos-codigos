@@ -107,23 +107,6 @@ export function useAdminSync() {
                     banners: adminBanners.value.length,
                     categories: adminCategories.value.length,
                 });
-                // sample outputs for quick debugging in client console
-                try {
-                    console.log(
-                        "[useAdminSync] adminProducts sample ->",
-                        adminProducts.value.slice(0, 3),
-                    );
-                    console.log(
-                        "[useAdminSync] adminBanners sample ->",
-                        adminBanners.value.slice(0, 3),
-                    );
-                    console.log(
-                        "[useAdminSync] adminCategories sample ->",
-                        adminCategories.value.slice(0, 3),
-                    );
-                } catch (e) {
-                    // ignore
-                }
             } catch (e) {
                 console.warn("useAdminSync: initial admin fetch failed", e);
             }
@@ -160,27 +143,11 @@ export function useAdminSync() {
                                     adminProducts.value.length,
                                 );
                             }
-                            if (adminBanners.value.length !== oldB.length) {
-                                console.log(
-                                    "[useAdminSync] adminBanners changed ->",
-                                    adminBanners.value.length,
-                                );
-                            }
-                            if (adminCategories.value.length !== oldC.length) {
-                                console.log(
-                                    "[useAdminSync] adminCategories changed ->",
-                                    adminCategories.value.length,
-                                );
-                            }
                         } catch (e) {
                             // ignore per-interval admin fetch errors
                         }
                     })(),
                 ]);
-                console.log(
-                    "[useAdminSync] periodic fetch succeeded at",
-                    new Date().toISOString(),
-                );
             } catch (e) {
                 // swallow - individual composables will surface errors
             }
@@ -204,10 +171,6 @@ export function useAdminSync() {
             if (adminProducts.value && adminProducts.value.length > 0) {
                 try {
                     const slice = adminProducts.value.slice(0, 8);
-                    console.log(
-                        "[useAdminSync] featuredProducts (admin) ->",
-                        slice.length,
-                    );
                     return slice;
                 } catch (e) {
                     return adminProducts.value;
@@ -233,7 +196,6 @@ export function useAdminSync() {
         adminBanners,
         adminCategories,
         manualRefresh: async () => {
-            console.log("[useAdminSync] manualRefresh called");
             await Promise.all([home.fetchHomeData(), settings.manualRefresh()]);
             try {
                 const [prods, bans, cats] = await Promise.all([

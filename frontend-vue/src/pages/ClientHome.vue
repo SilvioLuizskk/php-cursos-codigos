@@ -69,28 +69,6 @@
             </div>
         </section>
 
-        <!-- Debug Panel (temporary) -->
-        <section class="py-10 bg-yellow-100 border-t-4 border-yellow-500">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <h3 class="text-xl font-bold text-gray-800 mb-4">
-                    Debug: Produtos Admin Recebidos
-                </h3>
-                <div class="bg-white p-4 rounded shadow">
-                    <p class="text-sm text-gray-600 mb-2">
-                        Quantidade de produtos admin:
-                        <strong>{{ adminProducts.length }}</strong>
-                    </p>
-                    <p class="text-sm text-gray-600 mb-2">
-                        Primeiro produto (JSON):
-                    </p>
-                    <pre
-                        class="text-xs bg-gray-100 p-2 rounded overflow-auto max-h-40"
-                        >{{ JSON.stringify(adminProducts[0], null, 2) }}</pre
-                    >
-                </div>
-            </div>
-        </section>
-
         <!-- Features Section -->
         <section class="py-20 bg-white">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -429,28 +407,6 @@ export default {
                         } catch (e) {
                             // ignore
                         }
-                    },
-                    { immediate: true },
-                );
-                // Logar atualizações de produtos/banners para ajudar depuração
-                watch(
-                    () => featuredProducts.value,
-                    (list) => {
-                        console.log(
-                            "[ClientHome] featuredProducts updated ->",
-                            (list || []).length,
-                        );
-                    },
-                    { immediate: true },
-                );
-
-                watch(
-                    () => banners.value,
-                    (list) => {
-                        console.log(
-                            "[ClientHome] banners updated ->",
-                            (list || []).length,
-                        );
                     },
                     { immediate: true },
                 );
