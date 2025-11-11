@@ -1,310 +1,667 @@
 <template>
-    <div class="product-list py-8">
+    <div
+        class="product-list min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50"
+    >
+        <!-- Hero Section -->
         <div
-            class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row gap-8"
+            class="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-700 text-white py-16"
         >
-            <!-- Sidebar Filtros -->
-            <SidebarFilters
-                class="hidden md:block w-full md:w-64 shrink-0"
-                :categories="adminCategories"
-                :initial-filters="filters"
-                @apply-filters="applySidebarFilters"
-            />
-            <div class="flex-1">
-                <!-- Header -->
-                <div class="mb-8">
-                    <h1 class="text-3xl font-bold text-gray-900 mb-2">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center">
+                    <h1
+                        class="text-5xl md:text-6xl font-bold mb-4 bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent"
+                    >
                         Nossos Produtos
                     </h1>
-                    <p class="text-lg text-gray-600">
-                        Descubra nossa coleção de chinelos personalizados ({{
-                            adminProducts.length
-                        }}
-                        produtos carregados)
-                    </p>
-                </div>
-
-                <!-- Controles de Visualização e Ordenação -->
-                <div
-                    class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 p-4 bg-white rounded-lg shadow-sm"
-                >
-                    <div class="flex items-center gap-4">
-                        <span class="text-sm text-gray-600"
-                            >{{ products.length }} produtos</span
-                        >
-                        <div class="flex items-center gap-2">
-                            <button
-                                @click="viewMode = 'grid'"
-                                :class="[
-                                    'p-2 rounded-md transition-colors',
-                                    viewMode === 'grid'
-                                        ? 'bg-blue-100 text-blue-600'
-                                        : 'text-gray-400 hover:text-gray-600',
-                                ]"
-                            >
-                                <i class="fas fa-th"></i>
-                            </button>
-                            <button
-                                @click="viewMode = 'list'"
-                                :class="[
-                                    'p-2 rounded-md transition-colors',
-                                    viewMode === 'list'
-                                        ? 'bg-blue-100 text-blue-600'
-                                        : 'text-gray-400 hover:text-gray-600',
-                                ]"
-                            >
-                                <i class="fas fa-list"></i>
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="flex items-center gap-2">
-                        <label for="sort" class="text-sm text-gray-600"
-                            >Ordenar por:</label
-                        >
-                        <select
-                            id="sort"
-                            v-model="sortBy"
-                            @change="applySorting"
-                            class="px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        >
-                            <option value="name">Nome</option>
-                            <option value="price-low">
-                                Preço: Menor para Maior
-                            </option>
-                            <option value="price-high">
-                                Preço: Maior para Menor
-                            </option>
-                            <option value="rating">Avaliação</option>
-                            <option value="newest">Mais Recentes</option>
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Filtros rápidos mobile -->
-                <div class="md:hidden mb-4">
-                    <button
-                        @click="showMobileFilters = true"
-                        class="btn btn-outline w-full flex items-center justify-center"
+                    <p
+                        class="text-xl md:text-2xl text-blue-100 mb-8 max-w-3xl mx-auto"
                     >
-                        <i class="fas fa-filter mr-2"></i> Filtros
-                    </button>
-                </div>
-                <!-- Filtros antigos removidos, agora só na sidebar -->
-                <!-- Products Grid -->
-                <div v-if="loading" class="text-center py-12">
-                    <div class="spinner mx-auto mb-4"></div>
-                    <p class="text-gray-600">Carregando produtos...</p>
-                </div>
-                <div
-                    v-else-if="products.length === 0"
-                    class="text-center py-12"
-                >
-                    <i class="fas fa-search text-6xl text-gray-300 mb-4"></i>
-                    <h3 class="text-xl font-semibold text-gray-700 mb-2">
-                        Nenhum produto encontrado
-                    </h3>
-                    <p class="text-gray-500">
-                        Tente ajustar os filtros de busca
+                        Descubra nossa coleção exclusiva de chinelos
+                        personalizados
                     </p>
-                </div>
-                <div
-                    v-else
-                    :class="[
-                        'gap-6',
-                        viewMode === 'grid'
-                            ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
-                            : 'flex flex-col',
-                    ]"
-                >
-                    <TransitionGroup
-                        name="product"
-                        tag="div"
-                        :class="viewMode === 'grid' ? 'contents' : ''"
-                    >
+                    <div class="flex flex-wrap justify-center gap-4 text-sm">
                         <div
-                            v-for="product in products"
-                            :key="product.id"
-                            :class="[
-                                'bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 group',
-                                viewMode === 'list' ? 'flex mb-4' : '',
-                            ]"
+                            class="bg-white/10 backdrop-blur-sm rounded-full px-4 py-2"
                         >
-                            <div
-                                :class="[
-                                    'relative overflow-hidden',
-                                    viewMode === 'grid'
-                                        ? 'aspect-square'
-                                        : 'w-48 h-48 flex-shrink-0',
-                                ]"
-                            >
-                                <div
-                                    :class="[
-                                        'flex items-center justify-center group-hover:scale-110 transition-transform duration-500',
-                                        viewMode === 'grid'
-                                            ? 'w-full h-full bg-gradient-to-br from-blue-100 to-purple-100'
-                                            : 'w-full h-full bg-gradient-to-br from-blue-100 to-purple-100',
-                                    ]"
-                                >
-                                    <i
-                                        class="fas fa-flip-flops text-5xl text-blue-400 group-hover:text-blue-600 transition-colors duration-300"
-                                    ></i>
-                                </div>
-                                <!-- Badge de desconto -->
-                                <div
-                                    v-if="product.discount_price"
-                                    class="absolute top-3 left-3 bg-red-500 text-white px-2 py-1 rounded-full text-xs font-semibold"
-                                >
-                                    -{{
-                                        Math.round(
-                                            (1 -
-                                                product.price /
-                                                    product.discount_price) *
-                                                100,
-                                        )
-                                    }}%
-                                </div>
-                                <!-- Badge de novo -->
-                                <div
-                                    v-if="product.is_new"
-                                    class="absolute top-3 right-3 bg-green-500 text-white px-2 py-1 rounded-full text-xs font-semibold"
-                                >
-                                    Novo
-                                </div>
-                            </div>
-                            <div
-                                :class="
-                                    viewMode === 'grid' ? 'p-6' : 'p-6 flex-1'
-                                "
-                            >
-                                <h3
-                                    :class="[
-                                        'font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors',
-                                        viewMode === 'grid'
-                                            ? 'text-lg'
-                                            : 'text-xl',
-                                    ]"
-                                >
-                                    {{ product.name }}
-                                </h3>
-                                <p
-                                    :class="[
-                                        'text-gray-600 mb-3 line-clamp-2',
-                                        viewMode === 'grid'
-                                            ? 'text-sm'
-                                            : 'text-base',
-                                    ]"
-                                >
-                                    {{ product.description }}
-                                </p>
-                                <div class="flex items-center mb-3">
-                                    <div class="flex text-yellow-400">
-                                        <i
-                                            v-for="n in 5"
-                                            :key="n"
-                                            :class="
-                                                n <= (product.rating || 0)
-                                                    ? 'fas fa-star'
-                                                    : 'far fa-star'
-                                            "
-                                        ></i>
-                                    </div>
-                                    <span class="text-sm text-gray-500 ml-2"
-                                        >({{ product.reviews || 0 }})</span
-                                    >
-                                </div>
-                                <div
-                                    :class="[
-                                        'flex items-center justify-between',
-                                        viewMode === 'grid' ? 'mb-4' : 'mb-0',
-                                    ]"
-                                >
-                                    <div class="flex flex-col">
-                                        <span
-                                            :class="[
-                                                'font-bold text-blue-600',
-                                                viewMode === 'grid'
-                                                    ? 'text-lg'
-                                                    : 'text-xl',
-                                            ]"
-                                            >R$ {{ product.price }}</span
-                                        >
-                                        <span
-                                            v-if="product.discount_price"
-                                            class="text-sm text-gray-500 line-through"
-                                            >R$
-                                            {{ product.discount_price }}</span
-                                        >
-                                    </div>
-                                    <div class="flex gap-2">
-                                        <button
-                                            @click="quickView(product)"
-                                            class="p-2 text-gray-400 hover:text-blue-600 transition-colors"
-                                            title="Visualização rápida"
-                                        >
-                                            <i class="fas fa-eye"></i>
-                                        </button>
-                                        <button
-                                            @click="handleAddToCart(product)"
-                                            class="p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                                            title="Adicionar ao carrinho"
-                                        >
-                                            <i class="fas fa-cart-plus"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
+                            <i class="fas fa-box mr-2"></i>
+                            {{ adminProducts.length }} produtos disponíveis
                         </div>
-                    </TransitionGroup>
-                </div>
-
-                <!-- Paginação -->
-                <div
-                    v-if="pagination.total > pagination.per_page"
-                    class="mt-8 flex justify-center"
-                >
-                    <nav class="flex space-x-2">
-                        <button
-                            v-for="page in totalPages"
-                            :key="page"
-                            @click="changePage(page)"
-                            :class="[
-                                'px-3 py-2 rounded transition-all duration-200',
-                                page === pagination.current_page
-                                    ? 'bg-blue-600 text-white shadow-lg'
-                                    : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 hover:shadow-md',
-                            ]"
+                        <div
+                            class="bg-white/10 backdrop-blur-sm rounded-full px-4 py-2"
                         >
-                            {{ page }}
-                        </button>
-                    </nav>
+                            <i class="fas fa-tags mr-2"></i>
+                            {{ adminCategories.length }} categorias
+                        </div>
+                        <div
+                            class="bg-white/10 backdrop-blur-sm rounded-full px-4 py-2"
+                        >
+                            <i class="fas fa-star mr-2"></i>
+                            Qualidade garantida
+                        </div>
+                    </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Modal Filtros Mobile -->
-            <transition name="fade">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="flex flex-col lg:flex-row gap-8">
+                <!-- Sidebar Filtros -->
+                <div class="lg:w-80 flex-shrink-0">
+                    <div class="sticky top-8">
+                        <SidebarFilters
+                            class="hidden lg:block"
+                            :categories="adminCategories"
+                            :initial-filters="filters"
+                            @apply-filters="applySidebarFilters"
+                        />
+
+                        <!-- Mobile Filter Button -->
+                        <div class="lg:hidden mb-6">
+                            <button
+                                @click="showMobileFilters = true"
+                                class="w-full bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-4 flex items-center justify-center group"
+                            >
+                                <i
+                                    class="fas fa-filter text-blue-600 mr-3 group-hover:scale-110 transition-transform"
+                                ></i>
+                                <span class="font-semibold text-gray-700"
+                                    >Filtros Avançados</span
+                                >
+                                <i
+                                    class="fas fa-chevron-right text-gray-400 ml-auto group-hover:translate-x-1 transition-transform"
+                                ></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex-1">
+                    <!-- Controls Bar -->
+                    <div
+                        class="bg-white rounded-2xl shadow-lg p-6 mb-8 border border-gray-100"
+                    >
+                        <div
+                            class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6"
+                        >
+                            <!-- Results Count & View Toggle -->
+                            <div class="flex items-center gap-4">
+                                <div class="bg-blue-50 rounded-xl px-4 py-2">
+                                    <span
+                                        class="text-sm font-medium text-blue-700"
+                                    >
+                                        <i class="fas fa-box mr-2"></i>
+                                        {{ products.length }} produto{{
+                                            products.length !== 1 ? "s" : ""
+                                        }}
+                                    </span>
+                                </div>
+
+                                <div class="flex bg-gray-100 rounded-xl p-1">
+                                    <button
+                                        @click="viewMode = 'grid'"
+                                        :class="[
+                                            'p-3 rounded-lg transition-all duration-200 flex items-center gap-2',
+                                            viewMode === 'grid'
+                                                ? 'bg-white text-blue-600 shadow-md transform scale-105'
+                                                : 'text-gray-600 hover:text-blue-600 hover:bg-white/50',
+                                        ]"
+                                    >
+                                        <i class="fas fa-th"></i>
+                                        <span
+                                            class="hidden sm:inline text-sm font-medium"
+                                            >Grid</span
+                                        >
+                                    </button>
+                                    <button
+                                        @click="viewMode = 'list'"
+                                        :class="[
+                                            'p-3 rounded-lg transition-all duration-200 flex items-center gap-2',
+                                            viewMode === 'list'
+                                                ? 'bg-white text-blue-600 shadow-md transform scale-105'
+                                                : 'text-gray-600 hover:text-blue-600 hover:bg-white/50',
+                                        ]"
+                                    >
+                                        <i class="fas fa-list"></i>
+                                        <span
+                                            class="hidden sm:inline text-sm font-medium"
+                                            >Lista</span
+                                        >
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Sort Controls -->
+                            <div class="flex items-center gap-3">
+                                <label
+                                    class="text-sm font-medium text-gray-700 hidden sm:block"
+                                >
+                                    <i
+                                        class="fas fa-sort mr-2 text-blue-600"
+                                    ></i>
+                                    Ordenar por:
+                                </label>
+                                <select
+                                    v-model="sortBy"
+                                    @change="applySorting"
+                                    class="bg-white border-2 border-gray-200 rounded-xl px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 hover:border-blue-300"
+                                >
+                                    <option value="name">Nome (A-Z)</option>
+                                    <option value="price-low">
+                                        Preço: Menor → Maior
+                                    </option>
+                                    <option value="price-high">
+                                        Preço: Maior → Menor
+                                    </option>
+                                    <option value="rating">
+                                        Melhor Avaliados
+                                    </option>
+                                    <option value="newest">
+                                        Mais Recentes
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Loading State -->
+                    <div
+                        v-if="loading"
+                        class="flex flex-col items-center justify-center py-20"
+                    >
+                        <div class="relative">
+                            <div
+                                class="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"
+                            ></div>
+                            <div
+                                class="absolute inset-0 w-16 h-16 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin animation-delay-150"
+                            ></div>
+                        </div>
+                        <p class="text-gray-600 font-medium mt-6 text-lg">
+                            Carregando produtos incríveis...
+                        </p>
+                        <p class="text-gray-500 text-sm mt-2">
+                            Conectando com nosso admin
+                        </p>
+                    </div>
+
+                    <!-- Empty State -->
+                    <div
+                        v-else-if="products.length === 0"
+                        class="bg-white rounded-2xl shadow-lg p-12 text-center border border-gray-100"
+                    >
+                        <div
+                            class="w-24 h-24 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center mx-auto mb-6"
+                        >
+                            <i class="fas fa-search text-4xl text-blue-600"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-900 mb-3">
+                            Nenhum produto encontrado
+                        </h3>
+                        <p class="text-gray-600 mb-6 max-w-md mx-auto">
+                            Não encontramos produtos com os filtros aplicados.
+                            Tente ajustar sua busca ou limpe os filtros.
+                        </p>
+                        <button
+                            @click="clearAllFilters"
+                            class="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-3 rounded-xl font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+                        >
+                            <i class="fas fa-undo mr-2"></i>
+                            Limpar Filtros
+                        </button>
+                    </div>
+
+                    <!-- Products Grid/List -->
+                    <div v-else>
+                        <TransitionGroup
+                            name="product-fade"
+                            tag="div"
+                            :class="[
+                                'gap-6',
+                                viewMode === 'grid'
+                                    ? 'grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3'
+                                    : 'space-y-6',
+                            ]"
+                        >
+                            <div
+                                v-for="product in products"
+                                :key="product.id"
+                                :class="[
+                                    'group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 border border-gray-100 overflow-hidden',
+                                    viewMode === 'list' ? 'flex' : '',
+                                ]"
+                            >
+                                <!-- Product Image -->
+                                <div
+                                    :class="[
+                                        'relative overflow-hidden bg-gradient-to-br from-blue-50 to-purple-50',
+                                        viewMode === 'grid'
+                                            ? 'aspect-square'
+                                            : 'w-80 h-80 flex-shrink-0',
+                                    ]"
+                                >
+                                    <div
+                                        class="absolute inset-0 bg-gradient-to-br from-blue-600/10 to-purple-600/10 group-hover:from-blue-600/20 group-hover:to-purple-600/20 transition-all duration-500"
+                                    ></div>
+
+                                    <!-- Product Icon/Image Placeholder -->
+                                    <div
+                                        class="w-full h-full flex items-center justify-center group-hover:scale-110 transition-transform duration-500"
+                                    >
+                                        <div class="text-center">
+                                            <i
+                                                class="fas fa-flip-flops text-6xl text-blue-500 group-hover:text-blue-600 transition-colors duration-300 mb-2"
+                                            ></i>
+                                            <div
+                                                class="text-xs text-gray-500 font-medium"
+                                            >
+                                                Produto #{{ product.id }}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Badges -->
+                                    <div
+                                        class="absolute top-4 left-4 flex flex-col gap-2"
+                                    >
+                                        <div
+                                            v-if="
+                                                product.discount_price &&
+                                                product.discount_price >
+                                                    product.price
+                                            "
+                                            class="bg-red-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg animate-pulse"
+                                        >
+                                            -{{
+                                                Math.round(
+                                                    (1 -
+                                                        product.price /
+                                                            product.discount_price) *
+                                                        100,
+                                                )
+                                            }}%
+                                        </div>
+                                        <div
+                                            v-if="product.is_new"
+                                            class="bg-green-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg"
+                                        >
+                                            <i class="fas fa-sparkles mr-1"></i>
+                                            Novo
+                                        </div>
+                                        <div
+                                            v-if="product.featured"
+                                            class="bg-yellow-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg"
+                                        >
+                                            <i class="fas fa-star mr-1"></i>
+                                            Destaque
+                                        </div>
+                                    </div>
+
+                                    <!-- Quick Actions Overlay -->
+                                    <div
+                                        class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100"
+                                    >
+                                        <div class="flex gap-3">
+                                            <button
+                                                @click="quickView(product)"
+                                                class="bg-white/90 backdrop-blur-sm text-gray-700 p-3 rounded-full hover:bg-white hover:scale-110 transition-all duration-200 shadow-lg"
+                                                title="Visualização rápida"
+                                            >
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button
+                                                @click="
+                                                    handleAddToCart(product)
+                                                "
+                                                class="bg-blue-600 text-white p-3 rounded-full hover:bg-blue-700 hover:scale-110 transition-all duration-200 shadow-lg"
+                                                title="Adicionar ao carrinho"
+                                            >
+                                                <i class="fas fa-cart-plus"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Product Info -->
+                                <div
+                                    :class="
+                                        viewMode === 'grid'
+                                            ? 'p-6'
+                                            : 'p-6 flex-1 flex flex-col justify-between'
+                                    "
+                                >
+                                    <div>
+                                        <div
+                                            class="flex items-start justify-between mb-3"
+                                        >
+                                            <h3
+                                                class="font-bold text-gray-900 group-hover:text-blue-600 transition-colors duration-300 text-lg leading-tight"
+                                            >
+                                                {{ product.name }}
+                                            </h3>
+                                            <button
+                                                class="text-gray-400 hover:text-red-500 transition-colors p-1"
+                                            >
+                                                <i class="fas fa-heart"></i>
+                                            </button>
+                                        </div>
+
+                                        <p
+                                            class="text-gray-600 text-sm mb-4 line-clamp-2 leading-relaxed"
+                                        >
+                                            {{ product.description }}
+                                        </p>
+
+                                        <!-- Rating -->
+                                        <div class="flex items-center mb-4">
+                                            <div
+                                                class="flex text-yellow-400 mr-2"
+                                            >
+                                                <i
+                                                    v-for="n in 5"
+                                                    :key="n"
+                                                    :class="[
+                                                        'transition-colors duration-200',
+                                                        n <=
+                                                        (product.rating || 0)
+                                                            ? 'fas fa-star text-yellow-400'
+                                                            : 'far fa-star text-gray-300',
+                                                    ]"
+                                                ></i>
+                                            </div>
+                                            <span class="text-sm text-gray-500">
+                                                ({{ product.reviews || 0 }}
+                                                avaliações)
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Price & Actions -->
+                                    <div
+                                        class="flex items-center justify-between"
+                                    >
+                                        <div class="flex flex-col">
+                                            <div
+                                                class="flex items-baseline gap-2"
+                                            >
+                                                <span
+                                                    class="text-2xl font-bold text-blue-600"
+                                                >
+                                                    R$
+                                                    {{
+                                                        formatPrice(
+                                                            product.price,
+                                                        )
+                                                    }}
+                                                </span>
+                                                <span
+                                                    v-if="
+                                                        product.discount_price &&
+                                                        product.discount_price >
+                                                            product.price
+                                                    "
+                                                    class="text-sm text-gray-500 line-through"
+                                                >
+                                                    R$
+                                                    {{
+                                                        formatPrice(
+                                                            product.discount_price,
+                                                        )
+                                                    }}
+                                                </span>
+                                            </div>
+                                            <div
+                                                v-if="
+                                                    product.stock_quantity <=
+                                                        5 &&
+                                                    product.stock_quantity > 0
+                                                "
+                                                class="text-xs text-orange-600 font-medium mt-1"
+                                            >
+                                                <i
+                                                    class="fas fa-exclamation-triangle mr-1"
+                                                ></i>
+                                                Apenas
+                                                {{ product.stock_quantity }} em
+                                                estoque
+                                            </div>
+                                            <div
+                                                v-else-if="
+                                                    product.stock_quantity === 0
+                                                "
+                                                class="text-xs text-red-600 font-medium mt-1"
+                                            >
+                                                <i
+                                                    class="fas fa-times-circle mr-1"
+                                                ></i>
+                                                Fora de estoque
+                                            </div>
+                                        </div>
+
+                                        <div class="flex gap-2">
+                                            <button
+                                                @click="quickView(product)"
+                                                class="p-3 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all duration-200"
+                                                title="Visualização rápida"
+                                            >
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button
+                                                @click="
+                                                    handleAddToCart(product)
+                                                "
+                                                :disabled="
+                                                    product.stock_quantity === 0
+                                                "
+                                                :class="[
+                                                    'p-3 rounded-xl font-semibold transition-all duration-200 transform hover:scale-105 shadow-lg',
+                                                    product.stock_quantity === 0
+                                                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                                        : 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 hover:shadow-xl',
+                                                ]"
+                                                title="Adicionar ao carrinho"
+                                            >
+                                                <i class="fas fa-cart-plus"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </TransitionGroup>
+                    </div>
+
+                    <!-- Pagination -->
+                    <div
+                        v-if="pagination.total > pagination.per_page"
+                        class="mt-12 flex justify-center"
+                    >
+                        <nav
+                            class="flex items-center gap-2 bg-white rounded-2xl shadow-lg p-2 border border-gray-100"
+                        >
+                            <button
+                                @click="changePage(pagination.current_page - 1)"
+                                :disabled="pagination.current_page === 1"
+                                class="p-3 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-50 hover:text-blue-600"
+                            >
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+
+                            <template v-for="page in visiblePages" :key="page">
+                                <span
+                                    v-if="page === '...'"
+                                    :key="'ellipsis-' + Math.random()"
+                                    class="px-4 py-3 text-gray-500 cursor-default"
+                                >
+                                    ...
+                                </span>
+                                <button
+                                    v-else
+                                    :key="'page-' + page"
+                                    @click="changePage(page)"
+                                    :class="[
+                                        'px-4 py-3 rounded-xl font-semibold transition-all duration-200',
+                                        page === pagination.current_page
+                                            ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg transform scale-105'
+                                            : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600',
+                                    ]"
+                                >
+                                    {{ page }}
+                                </button>
+                            </template>
+
+                            <button
+                                @click="changePage(pagination.current_page + 1)"
+                                :disabled="
+                                    pagination.current_page === totalPages
+                                "
+                                class="p-3 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-50 hover:text-blue-600"
+                            >
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Filters Modal -->
+        <Transition name="modal">
+            <div
+                v-if="showMobileFilters"
+                class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+                @click.self="showMobileFilters = false"
+            >
                 <div
-                    v-if="showMobileFilters"
-                    class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40"
+                    class="bg-white rounded-2xl shadow-2xl w-full max-w-sm max-h-[90vh] overflow-hidden"
                 >
                     <div
-                        class="bg-white rounded-lg shadow-lg w-11/12 max-w-xs p-4 relative"
+                        class="p-6 border-b border-gray-100 flex items-center justify-between"
                     >
+                        <h3 class="text-lg font-bold text-gray-900">Filtros</h3>
                         <button
-                            class="absolute top-2 right-2 text-gray-500"
                             @click="showMobileFilters = false"
+                            class="p-2 text-gray-400 hover:text-gray-600 transition-colors"
                         >
                             <i class="fas fa-times"></i>
                         </button>
+                    </div>
+                    <div class="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
                         <SidebarFilters
                             :categories="adminCategories"
                             :initial-filters="filters"
                             @apply-filters="applySidebarFiltersMobile"
                         />
                     </div>
+                    <div class="p-6 border-t border-gray-100 bg-gray-50">
+                        <button
+                            @click="showMobileFilters = false"
+                            class="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-xl font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-300"
+                        >
+                            Aplicar Filtros
+                        </button>
+                    </div>
                 </div>
-            </transition>
-        </div>
+            </div>
+        </Transition>
+
+        <!-- Quick View Modal -->
+        <Transition name="modal">
+            <div
+                v-if="quickViewProduct"
+                class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+                @click.self="closeQuickView"
+            >
+                <div
+                    class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden"
+                >
+                    <div
+                        class="p-6 border-b border-gray-100 flex items-center justify-between"
+                    >
+                        <h3 class="text-xl font-bold text-gray-900">
+                            Visualização Rápida
+                        </h3>
+                        <button
+                            @click="closeQuickView"
+                            class="p-2 text-gray-400 hover:text-gray-600 transition-colors"
+                        >
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+                        <div class="grid md:grid-cols-2 gap-8">
+                            <!-- Product Image -->
+                            <div
+                                class="bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl p-8 flex items-center justify-center"
+                            >
+                                <i
+                                    class="fas fa-flip-flops text-8xl text-blue-500"
+                                ></i>
+                            </div>
+
+                            <!-- Product Details -->
+                            <div>
+                                <h4
+                                    class="text-2xl font-bold text-gray-900 mb-4"
+                                >
+                                    {{ quickViewProduct.name }}
+                                </h4>
+                                <p class="text-gray-600 mb-6 leading-relaxed">
+                                    {{ quickViewProduct.description }}
+                                </p>
+
+                                <div class="flex items-center mb-6">
+                                    <div class="flex text-yellow-400 mr-2">
+                                        <i
+                                            v-for="n in 5"
+                                            :key="n"
+                                            :class="
+                                                n <=
+                                                (quickViewProduct.rating || 0)
+                                                    ? 'fas fa-star'
+                                                    : 'far fa-star'
+                                            "
+                                        ></i>
+                                    </div>
+                                    <span class="text-sm text-gray-500">
+                                        ({{ quickViewProduct.reviews || 0 }}
+                                        avaliações)
+                                    </span>
+                                </div>
+
+                                <div class="mb-6">
+                                    <span
+                                        class="text-3xl font-bold text-blue-600"
+                                    >
+                                        R$
+                                        {{
+                                            formatPrice(quickViewProduct.price)
+                                        }}
+                                    </span>
+                                    <span
+                                        v-if="quickViewProduct.discount_price"
+                                        class="text-lg text-gray-500 line-through ml-3"
+                                    >
+                                        R$
+                                        {{
+                                            formatPrice(
+                                                quickViewProduct.discount_price,
+                                            )
+                                        }}
+                                    </span>
+                                </div>
+
+                                <button
+                                    @click="handleAddToCart(quickViewProduct)"
+                                    class="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 rounded-xl font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-lg"
+                                >
+                                    <i class="fas fa-cart-plus mr-2"></i>
+                                    Adicionar ao Carrinho
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </Transition>
     </div>
 </template>
 
@@ -337,9 +694,11 @@ export default {
             total_products: 0,
         });
         const showMobileFilters = ref(false);
+        const quickViewProduct = ref(null);
 
-        // Usar produtos do admin via useAdminSync
-        const { adminProducts, startPolling, stopPolling } = useAdminSync();
+        // Usar produtos e categorias do admin via useAdminSync
+        const { adminProducts, adminCategories, startPolling, stopPolling } =
+            useAdminSync();
 
         // Estado da visualização
         const viewMode = ref("grid");
@@ -416,6 +775,42 @@ export default {
             );
         });
 
+        const visiblePages = computed(() => {
+            const current = pagination.value.current_page;
+            const total = totalPages.value;
+            const pages = [];
+
+            if (total <= 7) {
+                for (let i = 1; i <= total; i++) {
+                    pages.push(i);
+                }
+            } else {
+                pages.push(1);
+
+                if (current > 4) pages.push("...");
+
+                const start = Math.max(2, current - 1);
+                const end = Math.min(total - 1, current + 1);
+
+                for (let i = start; i <= end; i++) {
+                    pages.push(i);
+                }
+
+                if (current < total - 3) pages.push("...");
+
+                if (total > 1) pages.push(total);
+            }
+
+            return pages;
+        });
+
+        const formatPrice = (price) => {
+            return new Intl.NumberFormat("pt-BR", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+            }).format(price);
+        };
+
         const loadProducts = async () => {
             loading.value = true;
             try {
@@ -490,6 +885,20 @@ export default {
                 sort_order: "desc",
             };
             searchProducts();
+        };
+
+        const clearAllFilters = () => {
+            filters.value = {
+                search: "",
+                category: "",
+                min_price: null,
+                max_price: null,
+                rating: 0,
+                featured: false,
+            };
+            sortBy.value = "name";
+            pagination.value.current_page = 1;
+            loadProducts();
         };
 
         const changePage = (page) => {
@@ -570,8 +979,11 @@ export default {
         };
 
         const quickView = (product) => {
-            // Implementar visualização rápida
-            router.push(`/produto/${product.slug || product.id}`);
+            quickViewProduct.value = product;
+        };
+
+        const closeQuickView = () => {
+            quickViewProduct.value = null;
         };
 
         onMounted(() => {
@@ -604,19 +1016,25 @@ export default {
             filters,
             pagination,
             totalPages,
+            visiblePages,
             searchProducts,
             clearFilters,
+            clearAllFilters,
             changePage,
             handleAddToCart,
             isAddingToCart,
             showMobileFilters,
-            categories: adminCategories,
+            quickViewProduct,
+            closeQuickView,
+            adminCategories,
+            adminProducts,
             applySidebarFilters,
             applySidebarFiltersMobile,
             viewMode,
             sortBy,
             applySorting,
             quickView,
+            formatPrice,
         };
     },
 };
@@ -674,33 +1092,48 @@ export default {
 }
 
 /* Transições para produtos */
-.product-enter-active,
-.product-leave-active {
-    transition: all 0.3s ease;
+.product-fade-enter-active,
+.product-fade-leave-active {
+    transition: all 0.5s ease;
 }
 
-.product-enter-from {
+.product-fade-enter-from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(30px) scale(0.95);
 }
 
-.product-leave-to {
+.product-fade-leave-to {
     opacity: 0;
-    transform: translateY(-20px);
+    transform: translateY(-30px) scale(0.95);
 }
 
-.product-move {
-    transition: transform 0.3s ease;
+.product-fade-move {
+    transition: transform 0.5s ease;
 }
 
 /* Transições para modal */
-.fade-enter-active,
-.fade-leave-active {
-    transition: opacity 0.3s ease;
+.modal-enter-active,
+.modal-leave-active {
+    transition: all 0.3s ease;
 }
 
-.fade-enter-from,
-.fade-leave-to {
+.modal-enter-from,
+.modal-leave-to {
     opacity: 0;
+    transform: scale(0.95);
+}
+
+/* Animação de delay para spinner */
+.animation-delay-150 {
+    animation-delay: 0.15s;
+}
+
+/* Hover effects */
+.group:hover .group-hover\:scale-110 {
+    transform: scale(1.1);
+}
+
+.group:hover .group-hover\:scale-105 {
+    transform: scale(1.05);
 }
 </style>
