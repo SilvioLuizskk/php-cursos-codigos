@@ -201,6 +201,7 @@
                     <ProductsGrid
                         :products="featuredProducts"
                         @view="viewProduct"
+                        :addToCart="handleAddToCart"
                     />
                 </div>
 

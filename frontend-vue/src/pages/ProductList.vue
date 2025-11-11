@@ -242,7 +242,7 @@
                                             <i class="fas fa-eye"></i>
                                         </button>
                                         <button
-                                            @click="addToCart(product)"
+                                            @click="handleAddToCart(product)"
                                             class="p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                                             title="Adicionar ao carrinho"
                                         >
