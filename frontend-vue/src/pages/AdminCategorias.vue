@@ -205,6 +205,15 @@
                 </form>
             </div>
         </div>
+
+        <!-- Confirm modal -->
+        <ConfirmModal
+            :visible="confirmVisible"
+            title="Excluir categoria"
+            message="Deseja realmente excluir esta categoria?"
+            @confirm="onConfirmDelete"
+            @cancel="onCancelDelete"
+        />
     </div>
 </template>
 
@@ -212,6 +221,7 @@
 import { ref, onMounted } from "vue";
 import { useNotification } from "@/composables/useNotification";
 import ImageUpload from "@/components/ImageUpload.vue";
+import ConfirmModal from "@/components/ConfirmModal.vue";
 import { adminService } from "@/services/adminService";
 import { resolveAssetUrl } from "@/services/api";
 
@@ -306,8 +316,19 @@ const editCategory = (category) => {
 };
 
 const deleteCategory = async (id) => {
+    // Abrir modal de confirmação
+    confirmTargetId.value = id;
+    confirmVisible.value = true;
+};
+
+const confirmVisible = ref(false);
+const confirmTargetId = ref(null);
+
+const onConfirmDelete = async () => {
+    const id = confirmTargetId.value;
+    confirmVisible.value = false;
+    confirmTargetId.value = null;
     try {
-        // Removido confirm() nativo — mostrar apenas notificação e executar ação
         await adminService.deleteCategory(id);
         categories.value = categories.value.filter((c) => c.id !== id);
         showNotification("Categoria excluída com sucesso!", "success");
@@ -315,6 +336,11 @@ const deleteCategory = async (id) => {
         console.error("Erro ao excluir categoria:", error);
         showNotification("Erro ao excluir categoria", "error");
     }
+};
+
+const onCancelDelete = () => {
+    confirmVisible.value = false;
+    confirmTargetId.value = null;
 };
 
 const updateOrder = async (category) => {

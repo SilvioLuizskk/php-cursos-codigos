@@ -370,11 +370,19 @@
                 </form>
             </div>
         </div>
+        <ConfirmModal
+            :visible="confirmVisible"
+            title="Excluir banner"
+            message="Deseja realmente excluir este banner?"
+            @confirm="onConfirmDeleteBanner"
+            @cancel="onCancelDeleteBanner"
+        />
     </div>
 </template>
 
 <script setup>
 import { ref, onMounted, computed } from "vue";
+import ConfirmModal from '@/components/ConfirmModal.vue';
 import { useNotification } from "@/composables/useNotification";
 import { adminService } from "@/services/adminService";
 import ImageUpload from "@/components/ImageUpload.vue";
@@ -490,8 +498,19 @@ const editBanner = (banner) => {
 };
 
 const deleteBanner = async (id) => {
+    // abrir modal
+    confirmTargetId.value = id;
+    confirmVisible.value = true;
+};
+
+const confirmVisible = ref(false);
+const confirmTargetId = ref(null);
+
+const onConfirmDeleteBanner = async () => {
+    const id = confirmTargetId.value;
+    confirmVisible.value = false;
+    confirmTargetId.value = null;
     try {
-        // Removido confirm() nativo — apenas notificação
         await adminService.deleteBanner(id);
         banners.value = banners.value.filter((b) => b.id !== id);
         showNotification("Banner excluído com sucesso!", "success");
@@ -499,6 +518,11 @@ const deleteBanner = async (id) => {
         console.error("Erro ao excluir banner:", error);
         showNotification("Erro ao excluir banner", "error");
     }
+};
+
+const onCancelDeleteBanner = () => {
+    confirmVisible.value = false;
+    confirmTargetId.value = null;
 };
 
 onMounted(() => {
