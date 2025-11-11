@@ -1158,17 +1158,6 @@ export default {
                     "[ProductList] adminProducts changed:",
                     newProducts.length,
                 );
-                // Debug: verificar estrutura das imagens
-                if (newProducts.length > 0) {
-                    console.log(
-                        "[ProductList] Primeiro produto:",
-                        newProducts[0],
-                    );
-                    console.log(
-                        "[ProductList] Imagens do primeiro produto:",
-                        newProducts[0].images,
-                    );
-                }
                 loadProducts();
             },
             { immediate: true },
