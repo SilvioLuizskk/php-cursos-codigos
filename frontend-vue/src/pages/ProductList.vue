@@ -6,7 +6,7 @@
             <!-- Sidebar Filtros -->
             <SidebarFilters
                 class="hidden md:block w-full md:w-64 shrink-0"
-                :categories="categories"
+                :categories="adminCategories"
                 :initial-filters="filters"
                 @apply-filters="applySidebarFilters"
             />
@@ -294,7 +294,7 @@
                             <i class="fas fa-times"></i>
                         </button>
                         <SidebarFilters
-                            :categories="categories"
+                            :categories="adminCategories"
                             :initial-filters="filters"
                             @apply-filters="applySidebarFiltersMobile"
                         />
@@ -306,12 +306,13 @@
 </template>
 
 <script>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 import SidebarFilters from "@/components/common/SidebarFilters.vue";
 import { useCart } from "@/composables/useCart";
 import { useAuth } from "@/composables/useAuth";
 import { useRouter } from "vue-router";
 import { useNotification } from "@/composables/useNotification";
+import { useAdminSync } from "@/composables/useAdminSync";
 
 export default {
     name: "ProductList",
@@ -333,12 +334,13 @@ export default {
             total_products: 0,
         });
         const showMobileFilters = ref(false);
-        const categories = ref([
-            "Havaianas",
-            "Ipanema",
-            "Rider",
-            "Personalizado",
-        ]);
+
+        // Usar categorias do admin via useAdminSync
+        const {
+            categories: adminCategories,
+            startPolling,
+            stopPolling,
+        } = useAdminSync();
 
         // Estado da visualização
         const viewMode = ref("grid");
@@ -572,6 +574,13 @@ export default {
 
         onMounted(() => {
             loadProducts();
+            // Iniciar polling para sincronizar categorias do admin
+            startPolling(3000);
+        });
+
+        onBeforeUnmount(() => {
+            // Parar polling quando componente for destruído
+            stopPolling();
         });
 
         return {
@@ -586,7 +595,7 @@ export default {
             handleAddToCart,
             isAddingToCart,
             showMobileFilters,
-            categories,
+            categories: adminCategories,
             applySidebarFilters,
             applySidebarFiltersMobile,
             viewMode,

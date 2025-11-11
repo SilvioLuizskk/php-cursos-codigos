@@ -25,6 +25,38 @@
                         >
                             Início
                         </router-link>
+
+                        <!-- Categories Dropdown -->
+                        <div class="relative" x-data="{ open: false }">
+                            <button
+                                @click="
+                                    categoriesDropdownOpen =
+                                        !categoriesDropdownOpen
+                                "
+                                class="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors flex items-center"
+                            >
+                                Categorias
+                                <i class="fas fa-chevron-down ml-1 text-xs"></i>
+                            </button>
+                            <div
+                                v-if="categoriesDropdownOpen"
+                                class="absolute top-full left-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 border"
+                                @click.stop
+                            >
+                                <div class="py-1">
+                                    <router-link
+                                        v-for="category in categories"
+                                        :key="category.id"
+                                        :to="`/produtos?categoria=${category.id}`"
+                                        class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-blue-600"
+                                        @click="categoriesDropdownOpen = false"
+                                    >
+                                        {{ category.name }}
+                                    </router-link>
+                                </div>
+                            </div>
+                        </div>
+
                         <router-link
                             to="/produtos"
                             class="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors"
@@ -74,6 +106,41 @@
                         >
                             Início
                         </router-link>
+
+                        <!-- Categories Mobile -->
+                        <div>
+                            <button
+                                @click="
+                                    mobileCategoriesOpen = !mobileCategoriesOpen
+                                "
+                                class="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium flex items-center justify-between w-full"
+                            >
+                                Categorias
+                                <i
+                                    :class="[
+                                        'fas text-xs',
+                                        mobileCategoriesOpen
+                                            ? 'fa-chevron-up'
+                                            : 'fa-chevron-down',
+                                    ]"
+                                ></i>
+                            </button>
+                            <div
+                                v-if="mobileCategoriesOpen"
+                                class="ml-4 mt-2 space-y-1"
+                            >
+                                <router-link
+                                    v-for="category in categories"
+                                    :key="category.id"
+                                    :to="`/produtos?categoria=${category.id}`"
+                                    class="block px-3 py-2 text-sm text-gray-600 hover:text-blue-600"
+                                    @click="mobileMenuOpen = false"
+                                >
+                                    {{ category.name }}
+                                </router-link>
+                            </div>
+                        </div>
+
                         <router-link
                             to="/produtos"
                             class="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium"
@@ -179,16 +246,22 @@
 </template>
 
 <script>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, onBeforeUnmount } from "vue";
 import FloatingCart from "@/components/cart/FloatingCart.vue";
+import { useAdminSync } from "@/composables/useAdminSync";
 
 export default {
     name: "App",
     components: { FloatingCart },
     setup() {
         const mobileMenuOpen = ref(false);
+        const categoriesDropdownOpen = ref(false);
+        const mobileCategoriesOpen = ref(false);
         const cartCount = ref(0);
         const notification = ref(null);
+
+        // Obter categorias do admin
+        const { categories, startPolling, stopPolling } = useAdminSync();
 
         // Simular contagem do carrinho
         const updateCartCount = () => {
@@ -206,6 +279,9 @@ export default {
 
         onMounted(() => {
             updateCartCount();
+
+            // Iniciar polling para sincronizar categorias do admin
+            startPolling(3000);
 
             // Inject Hotjar if configured
             try {
@@ -258,8 +334,16 @@ export default {
             }
         });
 
+        onBeforeUnmount(() => {
+            // Parar polling quando app for destruído
+            stopPolling();
+        });
+
         return {
             mobileMenuOpen,
+            categoriesDropdownOpen,
+            mobileCategoriesOpen,
+            categories,
             cartCount,
             notification,
             showNotification,
