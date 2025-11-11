@@ -16,7 +16,25 @@ export const adminService = {
     // Produtos Admin
     async getAdminProducts(params = {}) {
         const response = await apiClient.get("/admin/products", { params });
-        return response.data;
+        const data = response.data;
+
+        // Normalize images to absolute URLs if backend returns storage paths
+        const normalizeProduct = (p) => ({
+            ...p,
+            images: Array.isArray(p.images)
+                ? p.images.map((img) => resolveAssetUrl(img))
+                : p.images,
+        });
+
+        if (data && Array.isArray(data)) {
+            return data.map(normalizeProduct);
+        }
+
+        if (data && data.data && Array.isArray(data.data)) {
+            return { ...data, data: data.data.map(normalizeProduct) };
+        }
+
+        return data;
     },
 
     async createProduct(productData) {

@@ -115,7 +115,8 @@ class AdminController extends Controller
                 'sku' => 'required|string|unique:products',
                 'status' => 'required|in:active,inactive,draft',
                 'images' => 'nullable|array',
-                'images.*' => 'nullable|string|regex:/^\/storage\/.+$/',
+                // Accept absolute URLs or storage paths for images
+                'images.*' => ['nullable', 'string', 'regex:/^(https?:\\/\\/.+|\\/storage\\/.+)$/'],
             ]);
 
             Log::info('Dados validados', $validated);
@@ -128,6 +129,10 @@ class AdminController extends Controller
         } catch (\Illuminate\Validation\ValidationException $e) {
             Log::error('Erro de validação', $e->errors());
             return response()->json(['error' => 'Dados inválidos', 'details' => $e->errors()], 422);
+        } catch (\Illuminate\Database\QueryException $e) {
+            // Handle DB constraint violations (e.g., duplicate slug)
+            Log::error('DB error ao criar produto', ['message' => $e->getMessage()]);
+            return response()->json(['error' => 'Erro ao criar produto: conflito de integridade (slug/unique)'], 422);
         } catch (\Exception $e) {
             Log::error('Erro ao criar produto', ['message' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
             return response()->json(['error' => 'Erro ao criar produto: ' . $e->getMessage()], 500);
@@ -146,7 +151,8 @@ class AdminController extends Controller
                 'sku' => 'sometimes|required|string|unique:products,sku,' . $product->id,
                 'status' => 'sometimes|required|in:active,inactive,draft',
                 'images' => 'nullable|array',
-                'images.*' => 'nullable|string|regex:/^\/storage\/.+$/',
+                // Accept absolute URLs or storage paths for images
+                'images.*' => ['nullable', 'string', 'regex:/^(https?:\\/\\/.+|\\/storage\\/.+)$/'],
             ]);
 
             $product->update($validated);
@@ -222,13 +228,17 @@ class AdminController extends Controller
             $validated = $request->validate([
                 'name' => 'required|string|max:255',
                 'description' => 'nullable|string',
-                'image' => 'nullable|url',
+                // Accept either an absolute URL (http(s)://...) or a storage path like '/storage/...'
+                'image' => ['nullable', 'string', 'regex:/^(https?:\\/\\/.+|\\/storage\\/.+)$/'],
                 'active' => 'required|boolean',
             ]);
 
             $category = Category::create($validated);
 
             return response()->json($category, 201);
+        } catch (\Illuminate\Database\QueryException $e) {
+            Log::error('DB error ao criar categoria', ['message' => $e->getMessage()]);
+            return response()->json(['error' => 'Erro ao criar categoria: conflito de integridade (slug/unique)'], 422);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Erro ao criar categoria'], 500);
         }
@@ -240,7 +250,8 @@ class AdminController extends Controller
             $validated = $request->validate([
                 'name' => 'sometimes|required|string|max:255',
                 'description' => 'nullable|string',
-                'image' => 'nullable|url',
+                // Accept either an absolute URL or a storage path
+                'image' => ['nullable', 'string', 'regex:/^(https?:\\/\\/.+|\\/storage\\/.+)$/'],
                 'status' => 'sometimes|required|in:active,inactive',
             ]);
 
@@ -280,8 +291,10 @@ class AdminController extends Controller
             $validated = $request->validate([
                 'title' => 'required|string|max:255',
                 'description' => 'nullable|string',
-                'image' => 'required|url',
+                // Accept absolute URL or storage path
+                'image' => ['required', 'string', 'regex:/^(https?:\\/\\/.+|\\/storage\\/.+)$/'],
                 'link' => 'nullable|url',
+                'position' => 'required|in:hero,sidebar,carousel',
                 'status' => 'required|in:active,inactive',
                 'order' => 'required|integer|min:0',
             ]);
@@ -300,8 +313,9 @@ class AdminController extends Controller
             $validated = $request->validate([
                 'title' => 'sometimes|required|string|max:255',
                 'description' => 'nullable|string',
-                'image' => 'sometimes|required|url',
+                'image' => ['sometimes', 'required', 'string', 'regex:/^(https?:\\/\\/.+|\\/storage\\/.+)$/'],
                 'link' => 'nullable|url',
+                'position' => 'sometimes|required|in:hero,sidebar,carousel',
                 'status' => 'sometimes|required|in:active,inactive',
                 'order' => 'sometimes|required|integer|min:0',
             ]);

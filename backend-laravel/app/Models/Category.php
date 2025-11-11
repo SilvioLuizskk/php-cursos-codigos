@@ -34,15 +34,29 @@ class Category extends Model
 
         static::creating(function ($category) {
             if (!$category->slug) {
-                $category->slug = Str::slug($category->name);
+                $category->slug = static::generateUniqueSlug($category->name);
             }
         });
 
         static::updating(function ($category) {
             if ($category->isDirty('name') && !$category->slug) {
-                $category->slug = Str::slug($category->name);
+                $category->slug = static::generateUniqueSlug($category->name);
             }
         });
+    }
+
+    protected static function generateUniqueSlug($name)
+    {
+        $slug = Str::slug($name);
+        $count = 1;
+        $originalSlug = $slug;
+
+        while (static::where('slug', $slug)->exists()) {
+            $slug = $originalSlug . '-' . $count;
+            $count++;
+        }
+
+        return $slug;
     }
 
     /**
